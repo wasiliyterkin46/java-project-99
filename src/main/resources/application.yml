@@ -4,13 +4,10 @@ spring:
   datasource:
     driver-class-name: org.h2.Driver
   jpa:
-    ddl-auto: update
     show-sql: true
     hibernate:
+      ddl-auto: update
       format_sql: true
-  h2:
-    console:
-      enabled: true
 output:
   ansi:
   enabled: always    # цветной вывод логотипа
