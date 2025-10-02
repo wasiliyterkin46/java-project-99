@@ -40,8 +40,11 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("jakarta.persistence:jakarta.persistence-api:3.1.0")
 
-    // Бибилиотека базы данных h2
+    // Бибилиотеки баз данных
+    // h2
     runtimeOnly("com.h2database:h2:2.3.232")
+    //postgresql
+    runtimeOnly("org.postgresql:postgresql:42.7.7")
 
     implementation("com.fasterxml.jackson.core:jackson-databind:2.20.0")
 
