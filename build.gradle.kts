@@ -40,6 +40,15 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("jakarta.persistence:jakarta.persistence-api:3.1.0")
 
+    //Библиотеки для авторизации
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
+    testImplementation("org.springframework.security:spring-security-test")
+
+    // Для удобной работы с экземплярами моделей при тестировании
+    implementation("org.instancio:instancio-junit:5.5.0")
+    implementation("net.datafaker:datafaker:2.5.0")
+
     // Бибилиотеки баз данных
     // h2
     runtimeOnly("com.h2database:h2:2.3.232")
@@ -48,12 +57,22 @@ dependencies {
 
     implementation("com.fasterxml.jackson.core:jackson-databind:2.20.0")
 
+    // Библиотека для автоматической конвертации между DTO и сущностями
+    implementation("org.mapstruct:mapstruct:1.6.3")
+    annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
+
+    /*Библиотека для реализации возможности частичного обновления (разрешение конфликта,когда переданы
+    * значения не всех ожидаемых полей и при этом поле может быть явно передано,
+    * но иметь значение = null)
+    * */
+    implementation("org.openapitools:jackson-databind-nullable:0.2.7")
+
     compileOnly("org.projectlombok:lombok:1.18.40")
     annotationProcessor("org.projectlombok:lombok:1.18.40")
 
     // TEST
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    // Понадобится когда мы начнем работать с аутентификацией
+    // Для работы с аутентификацией в тестах
     testImplementation("org.springframework.security:spring-security-test")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -61,6 +80,8 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.junit.jupiter:junit-jupiter-params")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    // Библиотека для проверки содержания ответа в тестах
+    testImplementation("net.javacrumbs.json-unit:json-unit-assertj:4.1.0")
 }
 
 tasks.test {
