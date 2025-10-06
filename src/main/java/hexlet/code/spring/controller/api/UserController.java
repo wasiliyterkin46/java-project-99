@@ -33,7 +33,7 @@ public final class UserController {
     @Autowired
     private UserService service;
 
-    /*@GetMapping
+    @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Page<UserDTO>> index(@RequestParam(defaultValue = "0") Integer page,
                                                @RequestParam(defaultValue = "10") Integer limit) {
@@ -41,9 +41,9 @@ public final class UserController {
         return ResponseEntity.ok()
                 .header("X-Total-Count", String.valueOf(service.count()))
                 .body(usersPage);
-    }*/
+    }
 
-    @GetMapping
+    /*@GetMapping
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<List<UserDTO>> index(@RequestParam(defaultValue = "0") Integer page,
                                                @RequestParam(defaultValue = "10") Integer limit) {
@@ -51,7 +51,7 @@ public final class UserController {
         return ResponseEntity.ok()
                 .header("X-Total-Count", String.valueOf(service.count()))
                 .body(usersPage);
-    }
+    }*/
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
