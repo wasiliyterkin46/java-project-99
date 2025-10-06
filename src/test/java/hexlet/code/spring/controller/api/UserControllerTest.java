@@ -26,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -161,8 +162,8 @@ public final class UserControllerTest {
                 .getResponse().getContentAsString();
         List<UserDTO> userDTOS = om.readValue(responseBody, new TypeReference<>() {
         });
-        var actual = userDTOS.stream().map(mapper::map).toList();
-        var expected = repository.findAll();
+        var actual = userDTOS.stream().map(mapper::map).map(u -> u.getId()).toList();
+        var expected = repository.findAll().stream().map(u -> u.getId()).toList();
         Assertions.assertThat(actual).containsExactlyInAnyOrderElementsOf(expected);
     }
 

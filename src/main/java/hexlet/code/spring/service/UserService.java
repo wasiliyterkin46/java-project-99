@@ -5,15 +5,13 @@ import hexlet.code.spring.dto.user.UserDTO;
 import hexlet.code.spring.dto.user.UserUpdateDTO;
 import hexlet.code.spring.exception.ResourceNotFoundException;
 import hexlet.code.spring.mapper.UserMainMapper;
+import hexlet.code.spring.model.User;
 import hexlet.code.spring.repository.UserRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 @Service
 public class UserService {
@@ -23,16 +21,13 @@ public class UserService {
     @Autowired
     private UserMainMapper mapper;
 
-    public final List<UserDTO> getAll() {
-        var users = repository.findAll();
-        return users.stream()
+    public final List<UserDTO> getAll(final long start, final long end, final String order, final String sort) {
+        return repository.findAll().stream()
+                .sorted(getCompare(order, sort))
+                .skip(start)
+                .limit(end - start + 1)
                 .map(mapper::map)
                 .toList();
-    }
-
-    public final Page<UserDTO> getAll(int page, int limit) {
-        Pageable pageable = PageRequest.of(page, limit, Sort.by("createdAt").descending());
-        return repository.findAll(pageable).map(mapper::map);
     }
 
     public final UserDTO findById(final Long id) {
@@ -63,7 +58,42 @@ public class UserService {
         repository.deleteById(id);
     }
 
-    public final long count(){
+    public final long count() {
         return repository.count();
+    }
+
+    private Comparator<User> getCompare(final String order, final String sort) {
+        Comparator<User> comparator = null;
+        switch (sort) {
+            case "id":
+                comparator = Comparator.comparingLong(User::getId);
+                break;
+            case "email":
+                comparator = Comparator.comparing(User::getEmail);
+                break;
+            case "firstName":
+                comparator = Comparator.comparing(User::getFirstName, Comparator.nullsFirst(String::compareTo));
+                break;
+            case "lastName":
+                comparator = Comparator.comparing(User::getLastName, Comparator.nullsFirst(String::compareTo));
+                break;
+            case "createdAt":
+                comparator = Comparator.comparing(User::getCreatedAt);
+                break;
+            default:
+                throw new IllegalArgumentException(String.format("Указано некорректное поле сортировки = %s", sort));
+        }
+
+        switch (order) {
+            case "DESC":
+                comparator = comparator.reversed();
+                break;
+            case "ASC":
+                break;
+            default:
+                throw new IllegalArgumentException(String.format("Указан некорректный порядок сортировки = %s", order));
+        }
+
+        return comparator;
     }
 }

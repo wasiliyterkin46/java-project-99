@@ -7,10 +7,6 @@ import hexlet.code.spring.service.UserService;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -35,23 +31,15 @@ public final class UserController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Page<UserDTO>> index(@RequestParam(defaultValue = "0") Integer page,
-                                               @RequestParam(defaultValue = "10") Integer limit) {
-        var usersPage = service.getAll(page, limit);
+    public ResponseEntity<List<UserDTO>> index(@RequestParam(name = "_start", defaultValue = "0") final long start,
+                               @RequestParam(name = "_end", defaultValue = "10") final long end,
+                               @RequestParam(name = "_order", defaultValue = "ASC") final String order,
+                               @RequestParam(name = "_sort", defaultValue = "id") final String sort) {
+        var usersPage = service.getAll(start, end, order, sort);
         return ResponseEntity.ok()
                 .header("X-Total-Count", String.valueOf(service.count()))
                 .body(usersPage);
     }
-
-    /*@GetMapping
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<List<UserDTO>> index(@RequestParam(defaultValue = "0") Integer page,
-                                               @RequestParam(defaultValue = "10") Integer limit) {
-        var usersPage = service.getAll();
-        return ResponseEntity.ok()
-                .header("X-Total-Count", String.valueOf(service.count()))
-                .body(usersPage);
-    }*/
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
