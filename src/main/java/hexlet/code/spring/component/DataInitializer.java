@@ -21,6 +21,9 @@ public final class DataInitializer implements ApplicationRunner {
 
     @Override
     public void run(final ApplicationArguments args) throws Exception {
+        if (userRepository.findByEmail("hexlet@example.com").isPresent()) {
+            return;
+        }
         var userData = new User();
         userData.setEmail("hexlet@example.com");
         userData.setPasswordDigest("qwerty");
