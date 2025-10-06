@@ -8,6 +8,10 @@ import hexlet.code.spring.mapper.UserMainMapper;
 import hexlet.code.spring.repository.UserRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,6 +28,11 @@ public class UserService {
         return users.stream()
                 .map(mapper::map)
                 .toList();
+    }
+
+    public final Page<UserDTO> getAll(int page, int limit) {
+        Pageable pageable = PageRequest.of(page, limit, Sort.by("createdAt").descending());
+        return repository.findAll(pageable).map(mapper::map);
     }
 
     public final UserDTO findById(final Long id) {
@@ -52,5 +61,9 @@ public class UserService {
             throw new ResourceNotFoundException(String.format("User with id = %s not found", id));
         }
         repository.deleteById(id);
+    }
+
+    public final long count(){
+        return repository.count();
     }
 }
