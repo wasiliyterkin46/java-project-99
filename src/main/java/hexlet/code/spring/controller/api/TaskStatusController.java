@@ -1,10 +1,9 @@
 package hexlet.code.spring.controller.api;
 
-import hexlet.code.spring.dto.user.UserCreateDTO;
-import hexlet.code.spring.dto.user.UserDTO;
-import hexlet.code.spring.dto.user.UserUpdateDTO;
-import hexlet.code.spring.service.UserService;
-
+import hexlet.code.spring.dto.taskstatus.TaskStatusCreateDTO;
+import hexlet.code.spring.dto.taskstatus.TaskStatusDTO;
+import hexlet.code.spring.dto.taskstatus.TaskStatusUpdateDTO;
+import hexlet.code.spring.service.TaskStatusService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,39 +22,40 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/users")
-public final class UserController {
+@RequestMapping("/api/task_statuses")
+public final class TaskStatusController {
 
     @Autowired
-    private UserService service;
+    private TaskStatusService service;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<List<UserDTO>> index(@RequestParam(name = "_start", defaultValue = "0") final long start,
-                               @RequestParam(name = "_end", defaultValue = "10") final long end,
-                               @RequestParam(name = "_order", defaultValue = "ASC") final String order,
-                               @RequestParam(name = "_sort", defaultValue = "id") final String sort) {
-        var usersDTO = service.getAll(start, end, order, sort);
+    public ResponseEntity<List<TaskStatusDTO>> index(
+                @RequestParam(name = "_start", defaultValue = "0") final long start,
+                @RequestParam(name = "_end", defaultValue = "10") final long end,
+                @RequestParam(name = "_order", defaultValue = "ASC") final String order,
+                @RequestParam(name = "_sort", defaultValue = "id") final String sort) {
+        var taskStatusesDTO = service.getAll(start, end, order, sort);
         return ResponseEntity.ok()
                 .header("X-Total-Count", String.valueOf(service.count()))
-                .body(usersDTO);
+                .body(taskStatusesDTO);
     }
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public UserDTO show(@PathVariable final long id) {
+    public TaskStatusDTO show(@PathVariable final long id) {
         return service.findById(id);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UserDTO create(@Valid @RequestBody final UserCreateDTO dto) {
+    public TaskStatusDTO create(@Valid @RequestBody final TaskStatusCreateDTO dto) {
         return service.create(dto);
     }
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public UserDTO update(@Valid @RequestBody final UserUpdateDTO dto, @PathVariable final long id) {
+    public TaskStatusDTO update(@Valid @RequestBody final TaskStatusUpdateDTO dto, @PathVariable final long id) {
         return service.update(dto, id);
     }
 

@@ -1,5 +1,6 @@
 package hexlet.code.spring.handler;
 
+import hexlet.code.spring.exception.DuplicateDataException;
 import hexlet.code.spring.exception.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,11 @@ public final class GlobalExceptionHandler {
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<String> handleNotFound(final ResourceNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(DuplicateDataException.class)
+    public ResponseEntity<String> handleDuplicateData(final DuplicateDataException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

@@ -3,7 +3,9 @@ package hexlet.code.spring.service;
 import hexlet.code.spring.dto.user.UserCreateDTO;
 import hexlet.code.spring.dto.user.UserDTO;
 import hexlet.code.spring.dto.user.UserUpdateDTO;
+import hexlet.code.spring.exception.DuplicateDataException;
 import hexlet.code.spring.exception.ResourceNotFoundException;
+import hexlet.code.spring.mapper.JsonNullableMapper;
 import hexlet.code.spring.mapper.UserMainMapper;
 import hexlet.code.spring.model.User;
 import hexlet.code.spring.repository.UserRepository;
@@ -21,33 +23,51 @@ public class UserService {
     @Autowired
     private UserMainMapper mapper;
 
+    @Autowired
+    private JsonNullableMapper jsonNullableMapper;
+
     public final List<UserDTO> getAll(final long start, final long end, final String order, final String sort) {
         return repository.findAll().stream()
                 .sorted(getCompare(order, sort))
                 .skip(start)
                 .limit(end - start + 1)
-                .map(mapper::map)
+                .map(mapper::mapToDTO)
                 .toList();
     }
 
     public final UserDTO findById(final Long id) {
         var user = repository.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException(String.format("User with id = %s not found", id)));
-        return mapper.map(user);
+        return mapper.mapToDTO(user);
     }
 
     public final UserDTO create(final UserCreateDTO dto) {
-        var user = mapper.map(dto);
+        var email = dto.getEmail();
+        if (repository.existsByEmail(email)) {
+            throw new DuplicateDataException(String.format("Email должен быть уникальным. "
+                    + "В базе уже есть пользователь с email = %s", email));
+        }
+
+        var user = mapper.mapToModel(dto);
         repository.save(user);
-        return mapper.map(user);
+        return mapper.mapToDTO(user);
     }
 
     public final UserDTO update(@Valid final UserUpdateDTO dto, final Long id) {
         var user = repository.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException(String.format("User with id = %s not found", id)));
-        mapper.update(dto, user);
+
+        if (jsonNullableMapper.isPresent(dto.getEmail())) {
+            var email = jsonNullableMapper.unwrap(dto.getEmail());
+            if (repository.existsByEmail(email)) {
+                throw new DuplicateDataException(String.format("Email должен быть уникальным. "
+                        + "В базе уже есть пользователь с email = %s", email));
+            }
+        }
+
+        mapper.updateModelFromDTO(dto, user);
         repository.save(user);
-        return mapper.map(user);
+        return mapper.mapToDTO(user);
     }
 
     public final void delete(final Long id) {

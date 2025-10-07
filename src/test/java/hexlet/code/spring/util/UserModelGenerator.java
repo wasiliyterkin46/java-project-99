@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 @Getter
 @Component
 @Import(TestBeansConfig.class)
-public class ModelGenerator {
+public class UserModelGenerator {
     private Model<User> userModel;
 
     @Autowired

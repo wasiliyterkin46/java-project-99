@@ -40,17 +40,15 @@ public abstract class UserMainMapper {
         }
     }
 
-    // Добавить процедуру кодирования пароля для операции обновления
-
     @Mapping(target = "passwordDigest", source = "password")
-    public abstract User map(UserCreateDTO dto);
+    public abstract User mapToModel(UserCreateDTO dto);
 
     @Mapping(target = "createdAt", source = "createdAt", dateFormat = "yyyy-MM-dd")
-    public abstract UserDTO map(User model);
+    public abstract UserDTO mapToDTO(User model);
 
     @Mapping(target = "createdAt", ignore = true)
-    public abstract User map(UserDTO dto);
+    public abstract User mapToModel(UserDTO dto);
 
     @Mapping(target = "passwordDigest", ignore = true)
-    public abstract void update(UserUpdateDTO dto, @MappingTarget User model);
+    public abstract void updateModelFromDTO(UserUpdateDTO dto, @MappingTarget User model);
 }
