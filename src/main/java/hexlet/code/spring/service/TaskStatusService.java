@@ -3,24 +3,32 @@ package hexlet.code.spring.service;
 import hexlet.code.spring.dto.taskstatus.TaskStatusCreateDTO;
 import hexlet.code.spring.dto.taskstatus.TaskStatusDTO;
 import hexlet.code.spring.dto.taskstatus.TaskStatusUpdateDTO;
-import hexlet.code.spring.exception.DuplicateDataException;
+import hexlet.code.spring.exception.DeleteRelatedEntityException;
+import hexlet.code.spring.exception.RequestDataCannotBeProcessed;
 import hexlet.code.spring.exception.ResourceNotFoundException;
 import hexlet.code.spring.mapper.JsonNullableMapper;
 import hexlet.code.spring.mapper.TaskStatusMainMapper;
 import hexlet.code.spring.model.TaskStatus;
+import hexlet.code.spring.repository.TaskRepository;
 import hexlet.code.spring.repository.TaskStatusRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 @Service
 public class TaskStatusService {
 
     @Autowired
     private TaskStatusRepository repository;
+
+    @Autowired
+    private TaskRepository taskRepository;
 
     @Autowired
     private TaskStatusMainMapper mapper;
@@ -43,10 +51,10 @@ public class TaskStatusService {
         return mapper.mapToDTO(taskStatus);
     }
 
-    public final TaskStatusDTO create(final TaskStatusCreateDTO dto) {
+    public final TaskStatusDTO create(@Valid final TaskStatusCreateDTO dto) {
         var slug = dto.getSlug();
         if (repository.existsBySlug(slug)) {
-            throw new DuplicateDataException(String.format("Slug должен быть уникальным. "
+            throw new RequestDataCannotBeProcessed(String.format("Slug должен быть уникальным. "
                     + "В базе уже есть статус задачи со slug = %s", slug));
         }
 
@@ -62,7 +70,7 @@ public class TaskStatusService {
         if (jsonNullableMapper.isPresent(dto.getSlug())) {
             var slug = jsonNullableMapper.unwrap(dto.getSlug());
             if (repository.existsBySlug(slug)) {
-                throw new DuplicateDataException(String.format("Slug должен быть уникальным. "
+                throw new RequestDataCannotBeProcessed(String.format("Slug должен быть уникальным. "
                         + "В базе уже есть статус задачи со slug = %s", slug));
             }
         }
@@ -73,10 +81,16 @@ public class TaskStatusService {
     }
 
     public final void delete(final Long id) {
-        var taskStatusExist = repository.existsById(id);
-        if (!taskStatusExist) {
+        var taskStatus = repository.findById(id);
+        if (taskStatus.isEmpty()) {
             throw new ResourceNotFoundException(String.format("Task status with id = %s not found", id));
         }
+
+        var statusIsAssingedOnTask = taskRepository.existsByTaskStatus(taskStatus.get());
+        if (statusIsAssingedOnTask) {
+            throw new DeleteRelatedEntityException(String.format("Task status with id = %s is is used in tasks", id));
+        }
+
         repository.deleteById(id);
     }
 
@@ -85,34 +99,26 @@ public class TaskStatusService {
     }
 
     private Comparator<TaskStatus> getCompare(final String order, final String sort) {
-        Comparator<TaskStatus> comparator = null;
-        switch (sort) {
-            case "id":
-                comparator = Comparator.comparingLong(TaskStatus::getId);
-                break;
-            case "name":
-                comparator = Comparator.comparing(TaskStatus::getName);
-                break;
-            case "slug":
-                comparator = Comparator.comparing(TaskStatus::getSlug);
-                break;
-            case "createdAt":
-                comparator = Comparator.comparing(TaskStatus::getCreatedAt);
-                break;
-            default:
-                throw new IllegalArgumentException(String.format("Указано некорректное поле сортировки = %s", sort));
+        Map<String, Comparator<TaskStatus>> mapComparator = new HashMap<>();
+        mapComparator.put("id", Comparator.comparingLong(TaskStatus::getId));
+        mapComparator.put("name", Comparator.comparing(TaskStatus::getName));
+        mapComparator.put("slug", Comparator.comparing(TaskStatus::getSlug));
+        mapComparator.put("createdAt", Comparator.comparing(TaskStatus::getCreatedAt));
+
+        Map<String, Function<Comparator<TaskStatus>, Comparator<TaskStatus>>> mapOrder = new HashMap<>();
+        mapOrder.put("DESC", Comparator::reversed);
+        mapOrder.put("ASC", comp -> comp);
+
+        if (!mapComparator.containsKey(sort)) {
+            throw new RequestDataCannotBeProcessed(String.format("Указано некорректное поле сортировки = %s", sort));
+        }
+        if (!mapOrder.containsKey(order)) {
+            throw new RequestDataCannotBeProcessed(String.format("Указан некорректный порядок сортировки = %s", order));
         }
 
-        switch (order) {
-            case "DESC":
-                comparator = comparator.reversed();
-                break;
-            case "ASC":
-                break;
-            default:
-                throw new IllegalArgumentException(String.format("Указан некорректный порядок сортировки = %s", order));
-        }
+        var comparator = mapComparator.get(sort);
+        var func = mapOrder.get(order);
 
-        return comparator;
+        return func.apply(comparator);
     }
 }

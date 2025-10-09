@@ -4,12 +4,14 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hexlet.code.spring.dto.taskstatus.TaskStatusDTO;
 import hexlet.code.spring.mapper.TaskStatusMainMapper;
+import hexlet.code.spring.model.Task;
 import hexlet.code.spring.model.TaskStatus;
 import hexlet.code.spring.model.User;
+import hexlet.code.spring.repository.TaskRepository;
 import hexlet.code.spring.repository.TaskStatusRepository;
 import hexlet.code.spring.repository.UserRepository;
-import hexlet.code.spring.util.TaskStatusModelGenerator;
-import hexlet.code.spring.util.UserModelGenerator;
+import hexlet.code.spring.util.ModelGenerator;
+import hexlet.code.spring.util.TestUtils;
 import org.assertj.core.api.Assertions;
 import org.instancio.Instancio;
 import org.junit.jupiter.api.BeforeEach;
@@ -58,13 +60,13 @@ public class TaskStatusControllerTest {
     private UserRepository userRepository;
 
     @Autowired
+    private TaskRepository taskRepository;
+
+    @Autowired
     private MockMvc mockMvc;
 
     @Autowired
-    private TaskStatusModelGenerator taskStatusModelGenerator;
-
-    @Autowired
-    private UserModelGenerator userModelGenerator;
+    private ModelGenerator modelGenerator;
 
     @Autowired
     private ObjectMapper om;
@@ -73,23 +75,25 @@ public class TaskStatusControllerTest {
 
     private User testUser;
 
-    private String basePath = "/api/task_statuses";
+    private final String basePath = "/api/task_statuses";
 
     @BeforeEach
     public void setUp() {
+        taskRepository.deleteAll();
         repository.deleteAll();
+        userRepository.deleteAll();
 
         mockMvc = MockMvcBuilders.webAppContextSetup(wac).defaultResponseCharacterEncoding(StandardCharsets.UTF_8)
                 .apply(springSecurity()).build();
 
-        testUser = Instancio.of(userModelGenerator.getUserModel()).create();
+        testUser = Instancio.of(modelGenerator.getUserModel()).create();
         userRepository.save(testUser);
         token = jwt().jwt(builder -> builder.subject(testUser.getEmail()));
     }
 
     @Test
     public void testCreateSuccess() throws Exception {
-        var data = Instancio.of(taskStatusModelGenerator.getTaskStatusModel()).create();
+        var data = Instancio.of(modelGenerator.getTaskStatusModel()).create();
 
         var request = post(basePath).with(token).contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(data));
@@ -104,17 +108,17 @@ public class TaskStatusControllerTest {
 
     @Test
     public void testCreateFailture() throws Exception {
-        var data = Instancio.of(taskStatusModelGenerator.getTaskStatusModel()).create();
+        var data = Instancio.of(modelGenerator.getTaskStatusModel()).create();
         repository.save(data);
 
-        var data1 = Instancio.of(taskStatusModelGenerator.getTaskStatusModel()).create();
+        var data1 = Instancio.of(modelGenerator.getTaskStatusModel()).create();
         data1.setSlug("");
 
         var request1 = post(basePath).with(token).contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(data1));
         mockMvc.perform(request1).andExpect(status().isBadRequest());
 
-        var data2 = Instancio.of(taskStatusModelGenerator.getTaskStatusModel()).create();
+        var data2 = Instancio.of(modelGenerator.getTaskStatusModel()).create();
         data2.setName("");
 
         var request2 = post(basePath).with(token).contentType(MediaType.APPLICATION_JSON)
@@ -130,7 +134,7 @@ public class TaskStatusControllerTest {
 
     @Test
     public void testUpdateSuccess() throws Exception {
-        var data = Instancio.of(taskStatusModelGenerator.getTaskStatusModel()).create();
+        var data = Instancio.of(modelGenerator.getTaskStatusModel()).create();
         repository.save(data);
 
         var updateData = new TaskStatus();
@@ -149,7 +153,7 @@ public class TaskStatusControllerTest {
 
     @Test
     public void testUpdateFailture() throws Exception {
-        var data1 = Instancio.of(taskStatusModelGenerator.getTaskStatusModel()).create();
+        var data1 = Instancio.of(modelGenerator.getTaskStatusModel()).create();
         repository.save(data1);
 
         var updateData = new TaskStatus();
@@ -159,7 +163,7 @@ public class TaskStatusControllerTest {
                 .content(om.writeValueAsString(updateData));
         mockMvc.perform(request1).andExpect(status().isBadRequest());
 
-        var data2 = Instancio.of(taskStatusModelGenerator.getTaskStatusModel()).create();
+        var data2 = Instancio.of(modelGenerator.getTaskStatusModel()).create();
         repository.save(data2);
         data2.setSlug(data1.getSlug());
 
@@ -169,7 +173,7 @@ public class TaskStatusControllerTest {
     }
 
     @Test
-    public void testIndex() throws Exception {
+    public void testIndexSuccess() throws Exception {
         List<String> list = Arrays.asList("draft", "to_review", "to_be_fixed", "to_publish", "published");
         for (String elem : list) {
             var taskStatus = new TaskStatus();
@@ -183,9 +187,22 @@ public class TaskStatusControllerTest {
                 .getResponse().getContentAsString();
         List<TaskStatusDTO> taskStatusesDTOS = om.readValue(responseBody, new TypeReference<>() {
         });
-        var actual = taskStatusesDTOS.stream().map(mapper::mapToModel).map(u -> u.getId()).toList();
-        var expected = repository.findAll().stream().map(u -> u.getId()).toList();
+        var actual = taskStatusesDTOS.stream().map(mapper::mapToModel).map(TaskStatus::getId).toList();
+        var expected = repository.findAll().stream().map(TaskStatus::getId).toList();
         Assertions.assertThat(actual).containsExactlyInAnyOrderElementsOf(expected);
+    }
+
+    @Test
+    public void testIndexFailture() throws Exception {
+        var request1 = get(basePath).with(token).queryParam("_sort", "i")
+                .queryParam("_order", "ASC").queryParam("_start", "0")
+                .queryParam("_end", "25");
+        var responseBody1 = mockMvc.perform(request1).andExpect(status().isBadRequest());
+
+        var request2 = get(basePath).with(token).queryParam("_sort", "id")
+                .queryParam("_order", "AS").queryParam("_start", "0")
+                .queryParam("_end", "25");
+        var responseBody2 = mockMvc.perform(request2).andExpect(status().isBadRequest());
     }
 
     @Test
@@ -204,7 +221,8 @@ public class TaskStatusControllerTest {
 
     @Test
     public void testShowFailture() throws Exception {
-        var request = get(basePath + "/55").with(jwt());
+        var nonExistentIdTaskStatus = TestUtils.getNonExistentId(repository, TaskStatus::getId);
+        var request = get(basePath + "/" + nonExistentIdTaskStatus).with(jwt());
         mockMvc.perform(request).andExpect(status().isNotFound());
     }
 
@@ -225,7 +243,25 @@ public class TaskStatusControllerTest {
 
     @Test
     public void testDeleteFailture() throws Exception {
-        var request = delete(basePath + "/55").with(jwt());
-        mockMvc.perform(request).andExpect(status().isNotFound());
+        // Case delete non-exists status
+        var nonExistentIdTaskStatus = TestUtils.getNonExistentId(repository, TaskStatus::getId);
+        var request1 = delete(basePath + "/" + nonExistentIdTaskStatus).with(jwt());
+        mockMvc.perform(request1).andExpect(status().isNotFound());
+
+        // Case delete status in related task
+        var task = new Task();
+        task.setAssignee(testUser);
+        task.setName("Task");
+
+        var taskStatus = new TaskStatus();
+        taskStatus.setSlug("draft888");
+        taskStatus.setName("draft888");
+        repository.save(taskStatus);
+        task.setTaskStatus(taskStatus);
+
+        taskRepository.save(task);
+
+        var request2 = delete(basePath + "/" + taskStatus.getId()).with(jwt());
+        mockMvc.perform(request2).andExpect(status().isMethodNotAllowed());
     }
 }

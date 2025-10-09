@@ -5,9 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import hexlet.code.spring.dto.user.UserDTO;
 import hexlet.code.spring.mapper.UserMainMapper;
+import hexlet.code.spring.model.Task;
+import hexlet.code.spring.model.TaskStatus;
 import hexlet.code.spring.model.User;
+import hexlet.code.spring.repository.TaskRepository;
+import hexlet.code.spring.repository.TaskStatusRepository;
 import hexlet.code.spring.repository.UserRepository;
-import hexlet.code.spring.util.UserModelGenerator;
+import hexlet.code.spring.util.ModelGenerator;
+import hexlet.code.spring.util.TestUtils;
 import org.assertj.core.api.Assertions;
 import org.instancio.Instancio;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,10 +57,16 @@ public final class UserControllerTest {
     private UserRepository repository;
 
     @Autowired
+    private TaskStatusRepository taskStatusRepository;
+
+    @Autowired
+    private TaskRepository taskRepository;
+
+    @Autowired
     private MockMvc mockMvc;
 
     @Autowired
-    private UserModelGenerator userModelGenerator;
+    private ModelGenerator modelGenerator;
 
     @Autowired
     private ObjectMapper om;
@@ -68,12 +79,14 @@ public final class UserControllerTest {
 
     @BeforeEach
     public void setUp() {
+        taskRepository.deleteAll();
         repository.deleteAll();
+        taskStatusRepository.deleteAll();
 
         mockMvc = MockMvcBuilders.webAppContextSetup(wac).defaultResponseCharacterEncoding(StandardCharsets.UTF_8)
                 .apply(springSecurity()).build();
 
-        testUser = Instancio.of(userModelGenerator.getUserModel()).create();
+        testUser = Instancio.of(modelGenerator.getUserModel()).create();
         repository.save(testUser);
         token = jwt().jwt(builder -> builder.subject(testUser.getEmail()));
     }
@@ -86,7 +99,7 @@ public final class UserControllerTest {
 
     @Test
     public void testCreateSuccess() throws Exception {
-        var data = Instancio.of(userModelGenerator.getUserModel()).create();
+        var data = Instancio.of(modelGenerator.getUserModel()).create();
 
         var request = post(basePath).with(token).contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(data));
@@ -101,21 +114,21 @@ public final class UserControllerTest {
 
     @Test
     public void testCreateFailture() throws Exception {
-        var data1 = Instancio.of(userModelGenerator.getUserModel()).create();
+        var data1 = Instancio.of(modelGenerator.getUserModel()).create();
         data1.setPasswordDigest("qq");
 
         var request1 = post(basePath).with(token).contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(data1));
         mockMvc.perform(request1).andExpect(status().isBadRequest());
 
-        var data2 = Instancio.of(userModelGenerator.getUserModel()).create();
+        var data2 = Instancio.of(modelGenerator.getUserModel()).create();
         data2.setEmail("qq");
 
         var request2 = post(basePath).with(token).contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(data2));
         mockMvc.perform(request2).andExpect(status().isBadRequest());
 
-        var data3 = Instancio.of(userModelGenerator.getUserModel()).create();
+        var data3 = Instancio.of(modelGenerator.getUserModel()).create();
         data3.setEmail(testUser.getEmail());
 
         var request3 = post(basePath).with(token).contentType(MediaType.APPLICATION_JSON)
@@ -125,7 +138,7 @@ public final class UserControllerTest {
 
     @Test
     public void testUpdateSuccess() throws Exception {
-        var data = Instancio.of(userModelGenerator.getUserModel()).create();
+        var data = Instancio.of(modelGenerator.getUserModel()).create();
         repository.save(data);
 
         var updateData = new User();
@@ -146,7 +159,7 @@ public final class UserControllerTest {
 
     @Test
     public void testUpdateFailture() throws Exception {
-        var data1 = Instancio.of(userModelGenerator.getUserModel()).create();
+        var data1 = Instancio.of(modelGenerator.getUserModel()).create();
         repository.save(data1);
 
         var updateData = new User();
@@ -156,7 +169,7 @@ public final class UserControllerTest {
                 .content(om.writeValueAsString(updateData));
         mockMvc.perform(request1).andExpect(status().isBadRequest());
 
-        var data2 = Instancio.of(userModelGenerator.getUserModel()).create();
+        var data2 = Instancio.of(modelGenerator.getUserModel()).create();
         repository.save(data2);
 
         data2.setEmail(data1.getEmail());
@@ -167,7 +180,7 @@ public final class UserControllerTest {
     }
 
     @Test
-    public void testIndex() throws Exception {
+    public void testIndexSuccess() throws Exception {
         var request = get(basePath).with(token);
         var responseBody = mockMvc.perform(request).andExpect(status().isOk()).andReturn()
                 .getResponse().getContentAsString();
@@ -176,6 +189,19 @@ public final class UserControllerTest {
         var actual = userDTOS.stream().map(mapper::mapToModel).map(u -> u.getId()).toList();
         var expected = repository.findAll().stream().map(u -> u.getId()).toList();
         Assertions.assertThat(actual).containsExactlyInAnyOrderElementsOf(expected);
+    }
+
+    @Test
+    public void testIndexFailture() throws Exception {
+        var request1 = get(basePath).with(token).queryParam("_sort", "i")
+                .queryParam("_order", "ASC").queryParam("_start", "0")
+                .queryParam("_end", "25");
+        var responseBody1 = mockMvc.perform(request1).andExpect(status().isBadRequest());
+
+        var request2 = get(basePath).with(token).queryParam("_sort", "id")
+                .queryParam("_order", "AS").queryParam("_start", "0")
+                .queryParam("_end", "25");
+        var responseBody2 = mockMvc.perform(request2).andExpect(status().isBadRequest());
     }
 
     @Test
@@ -190,7 +216,8 @@ public final class UserControllerTest {
 
     @Test
     public void testShowFailture() throws Exception {
-        var request = get(basePath + "/55").with(jwt());
+        var nonExistentIdUser = TestUtils.getNonExistentId(repository, User::getId);
+        var request = get(basePath + "/" + nonExistentIdUser).with(jwt());
         mockMvc.perform(request).andExpect(status().isNotFound());
     }
 
@@ -206,7 +233,25 @@ public final class UserControllerTest {
 
     @Test
     public void testDeleteFailture() throws Exception {
-        var request = delete(basePath + "/55").with(jwt());
+        // Case delete non-exists user
+        var nonExistentIdUser = TestUtils.getNonExistentId(repository, User::getId);
+        var request = delete(basePath + "/" + nonExistentIdUser).with(jwt());
         mockMvc.perform(request).andExpect(status().isNotFound());
+
+        // Case delete user assigned on task
+        var task = new Task();
+        task.setAssignee(testUser);
+        task.setName("Task");
+
+        var taskStatus = new TaskStatus();
+        taskStatus.setSlug("draft777");
+        taskStatus.setName("draft777");
+        taskStatusRepository.save(taskStatus);
+        task.setTaskStatus(taskStatus);
+
+        taskRepository.save(task);
+
+        var request2 = delete(basePath + "/" + testUser.getId()).with(jwt());
+        mockMvc.perform(request2).andExpect(status().isMethodNotAllowed());
     }
 }

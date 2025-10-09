@@ -84,6 +84,8 @@ dependencies {
     testImplementation("net.javacrumbs.json-unit:json-unit-assertj:4.1.0")
 }
 
+tasks.jacocoTestReport { reports { xml.required.set(true) } }
+
 tasks.test {
     useJUnitPlatform()
     finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run

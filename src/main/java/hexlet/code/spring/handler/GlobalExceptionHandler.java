@@ -1,6 +1,7 @@
 package hexlet.code.spring.handler;
 
-import hexlet.code.spring.exception.DuplicateDataException;
+import hexlet.code.spring.exception.DeleteRelatedEntityException;
+import hexlet.code.spring.exception.RequestDataCannotBeProcessed;
 import hexlet.code.spring.exception.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,8 +16,8 @@ public final class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
-    @ExceptionHandler(DuplicateDataException.class)
-    public ResponseEntity<String> handleDuplicateData(final DuplicateDataException ex) {
+    @ExceptionHandler(RequestDataCannotBeProcessed.class)
+    public ResponseEntity<String> handleDuplicateData(final RequestDataCannotBeProcessed ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
@@ -26,14 +27,15 @@ public final class GlobalExceptionHandler {
                 .body("Validation failed: " + ex.getBindingResult().getFieldError().getDefaultMessage());
     }
 
-    /*@ExceptionHandler(ResourceAlreadyExistsException.class)
-    public ResponseEntity<String> handleNotFound(ResourceAlreadyExistsException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
-    }*/
-
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleOtherExceptions(final Exception ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("Something went wrong: " + ex.getMessage());
+    }
+
+    @ExceptionHandler(DeleteRelatedEntityException.class)
+    public ResponseEntity<String> handleMethodNotAllowed(final DeleteRelatedEntityException ex) {
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                .body("Method not allowed: " + ex.getMessage());
     }
 }
