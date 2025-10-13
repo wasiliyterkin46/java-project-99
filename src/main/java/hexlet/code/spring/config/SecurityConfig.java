@@ -38,7 +38,11 @@ public class SecurityConfig {
         return http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/welcome", "/api/login", "/index.html", "/assets/**").permitAll()
+                        .requestMatchers("/", "/welcome", "/api/login", "/index.html", "/assets/**",
+                                "/api-docs", "/v3/api-docs", "/swagger-resources/configuration/ui",
+                                "/configuration/ui", "/swagger-resources", "/swagger-ui/**", 
+                                "/swagger-resources/configuration/security", "/configuration/security",
+                                "/swagger-ui.html", "/webjars/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .oauth2ResourceServer((rs) -> rs.jwt((jwt) -> jwt.decoder(jwtDecoder)))

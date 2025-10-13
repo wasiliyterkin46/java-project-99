@@ -51,12 +51,6 @@ public class UserService {
     }
 
     public final UserDTO create(final UserCreateDTO dto) {
-        var email = dto.getEmail();
-        if (repository.existsByEmail(email)) {
-            throw new RequestDataCannotBeProcessed(String.format("Email должен быть уникальным. "
-                    + "В базе уже есть пользователь с email = %s", email));
-        }
-
         var user = mapper.mapToModel(dto);
         repository.save(user);
         return mapper.mapToDTO(user);
@@ -65,14 +59,6 @@ public class UserService {
     public final UserDTO update(@Valid final UserUpdateDTO dto, final Long id) {
         var user = repository.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException(String.format("User with id = %s not found", id)));
-
-        if (jsonNullableMapper.isPresent(dto.getEmail())) {
-            var email = jsonNullableMapper.unwrap(dto.getEmail());
-            if (repository.existsByEmail(email)) {
-                throw new RequestDataCannotBeProcessed(String.format("Email должен быть уникальным. "
-                        + "В базе уже есть пользователь с email = %s", email));
-            }
-        }
 
         mapper.updateModelFromDTO(dto, user);
         repository.save(user);

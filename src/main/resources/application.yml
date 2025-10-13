@@ -8,6 +8,8 @@ spring:
     hibernate:
       ddl-auto: update
       format_sql: true
+  api-docs:
+    path: /api-docs
 rsa:
   private-key: classpath:certs/private.pem
   public-key: classpath:certs/public.pem

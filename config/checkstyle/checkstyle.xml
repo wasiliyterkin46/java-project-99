@@ -40,6 +40,7 @@
       <property name="basedir" value="${basedir}"/>
   -->
   <property name="severity" value="error"/>
+    <module name="SuppressWarningsFilter"/>
 
   <property name="fileExtensions" value="java, properties, xml"/>
 
@@ -87,9 +88,20 @@
   <!--   <property name="headerFile" value="${checkstyle.header.file}"/> -->
   <!--   <property name="fileExtensions" value="java"/> -->
   <!-- </module> -->
-
   <module name="TreeWalker">
-    <!-- Checks for Naming Conventions.                  -->
+    <module name="SuppressWarnings">
+      <property name="id" value="checkstyle:suppresswarnings"/>
+    </module>
+      <module name="SuppressWarningsHolder"/>
+      <module name="SuppressWithNearbyCommentFilter"/>
+      <module name="SuppressionCommentFilter">
+          <metadata name="net.sf.eclipsecs.core.comment" value="Single warning"/>
+          <property name="offCommentFormat" value="CHECKSTYLE\:OFF\: ([\w\|]+)"/>
+          <property name="onCommentFormat" value="CHECKSTYLE\:ON\: ([\w\|]+)"/>
+          <property name="checkFormat" value="$1"/>
+      </module>
+
+      <!-- Checks for Naming Conventions.                  -->
     <!-- See https://checkstyle.org/checks/naming/index.html -->
     <module name="ConstantName"/>
     <module name="LocalFinalVariableName"/>

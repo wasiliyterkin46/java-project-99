@@ -71,6 +71,9 @@ public final class UserControllerTest {
     @Autowired
     private ObjectMapper om;
 
+    @Autowired
+    private TestUtils testUtils;
+
     private JwtRequestPostProcessor token;
 
     private User testUser;
@@ -79,9 +82,7 @@ public final class UserControllerTest {
 
     @BeforeEach
     public void setUp() {
-        taskRepository.deleteAll();
-        repository.deleteAll();
-        taskStatusRepository.deleteAll();
+        testUtils.clearAllRepository();
 
         mockMvc = MockMvcBuilders.webAppContextSetup(wac).defaultResponseCharacterEncoding(StandardCharsets.UTF_8)
                 .apply(springSecurity()).build();
@@ -216,7 +217,7 @@ public final class UserControllerTest {
 
     @Test
     public void testShowFailture() throws Exception {
-        var nonExistentIdUser = TestUtils.getNonExistentId(repository, User::getId);
+        var nonExistentIdUser = testUtils.getNonExistentId(repository, User::getId);
         var request = get(basePath + "/" + nonExistentIdUser).with(jwt());
         mockMvc.perform(request).andExpect(status().isNotFound());
     }
@@ -234,7 +235,7 @@ public final class UserControllerTest {
     @Test
     public void testDeleteFailture() throws Exception {
         // Case delete non-exists user
-        var nonExistentIdUser = TestUtils.getNonExistentId(repository, User::getId);
+        var nonExistentIdUser = testUtils.getNonExistentId(repository, User::getId);
         var request = delete(basePath + "/" + nonExistentIdUser).with(jwt());
         mockMvc.perform(request).andExpect(status().isNotFound());
 

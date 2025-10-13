@@ -1,7 +1,9 @@
 package hexlet.code.spring.component;
 
+import hexlet.code.spring.model.Label;
 import hexlet.code.spring.model.TaskStatus;
 import hexlet.code.spring.model.User;
+import hexlet.code.spring.repository.LabelRepository;
 import hexlet.code.spring.repository.TaskStatusRepository;
 import hexlet.code.spring.repository.UserRepository;
 import hexlet.code.spring.service.CustomUserDetailsService;
@@ -27,6 +29,9 @@ public final class DataInitializer implements ApplicationRunner {
 
     @Autowired
     private final CustomUserDetailsService userService;
+
+    @Autowired
+    private final LabelRepository labelRepository;
 
     @Override
     public void run(final ApplicationArguments args) throws Exception {
@@ -56,5 +61,14 @@ public final class DataInitializer implements ApplicationRunner {
             taskStatus.setSlug(elem);
             taskStatusRepository.save(taskStatus);
         }
+    }
+
+    private void labelInit() {
+        var label1 = new Label();
+        label1.setName("feature");
+        labelRepository.save(label1);
+        var label2 = new Label();
+        label2.setName("bug");
+        labelRepository.save(label2);
     }
 }

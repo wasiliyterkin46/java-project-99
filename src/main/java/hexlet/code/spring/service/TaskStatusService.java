@@ -52,12 +52,6 @@ public class TaskStatusService {
     }
 
     public final TaskStatusDTO create(@Valid final TaskStatusCreateDTO dto) {
-        var slug = dto.getSlug();
-        if (repository.existsBySlug(slug)) {
-            throw new RequestDataCannotBeProcessed(String.format("Slug должен быть уникальным. "
-                    + "В базе уже есть статус задачи со slug = %s", slug));
-        }
-
         var taskStatus = mapper.mapToModel(dto);
         repository.save(taskStatus);
         return mapper.mapToDTO(taskStatus);
@@ -66,14 +60,6 @@ public class TaskStatusService {
     public final TaskStatusDTO update(@Valid final TaskStatusUpdateDTO dto, final Long id) {
         var taskStatus = repository.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException(String.format("Task status with id = %s not found", id)));
-
-        if (jsonNullableMapper.isPresent(dto.getSlug())) {
-            var slug = jsonNullableMapper.unwrap(dto.getSlug());
-            if (repository.existsBySlug(slug)) {
-                throw new RequestDataCannotBeProcessed(String.format("Slug должен быть уникальным. "
-                        + "В базе уже есть статус задачи со slug = %s", slug));
-            }
-        }
 
         mapper.updateModelFromDTO(dto, taskStatus);
         repository.save(taskStatus);
@@ -88,7 +74,7 @@ public class TaskStatusService {
 
         var statusIsAssingedOnTask = taskRepository.existsByTaskStatus(taskStatus.get());
         if (statusIsAssingedOnTask) {
-            throw new DeleteRelatedEntityException(String.format("Task status with id = %s is is used in tasks", id));
+            throw new DeleteRelatedEntityException(String.format("Task status with id = %s is used in tasks", id));
         }
 
         repository.deleteById(id);

@@ -1,9 +1,9 @@
 package hexlet.code.spring.controller.api;
 
-import hexlet.code.spring.dto.taskstatus.TaskStatusCreateDTO;
-import hexlet.code.spring.dto.taskstatus.TaskStatusDTO;
-import hexlet.code.spring.dto.taskstatus.TaskStatusUpdateDTO;
-import hexlet.code.spring.service.TaskStatusService;
+import hexlet.code.spring.dto.label.LabelCreateDTO;
+import hexlet.code.spring.dto.label.LabelDTO;
+import hexlet.code.spring.dto.label.LabelUpdateDTO;
+import hexlet.code.spring.service.LabelService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,39 +22,39 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/task_statuses")
-public final class TaskStatusController {
+@RequestMapping("/api/labels")
+public class LabelController {
 
     @Autowired
-    private TaskStatusService service;
+    private LabelService service;
 
     @GetMapping
-    public ResponseEntity<List<TaskStatusDTO>> index(
+    public ResponseEntity<List<LabelDTO>> index(
             @RequestParam(name = "_start", defaultValue = "0") final long start,
             @RequestParam(name = "_end", defaultValue = "10") final long end,
             @RequestParam(name = "_order", defaultValue = "ASC") final String order,
             @RequestParam(name = "_sort", defaultValue = "id") final String sort) {
-        var taskStatusesDTO = service.getAll(start, end, order, sort);
+        var labelsDTO = service.getAll(start, end, order, sort);
         return ResponseEntity.ok()
                 .header("X-Total-Count", String.valueOf(service.count()))
-                .body(taskStatusesDTO);
+                .body(labelsDTO);
     }
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public TaskStatusDTO show(@PathVariable final long id) {
+    public LabelDTO show(@PathVariable final long id) {
         return service.findById(id);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public TaskStatusDTO create(@Valid @RequestBody final TaskStatusCreateDTO dto) {
+    public LabelDTO create(@Valid @RequestBody final LabelCreateDTO dto) {
         return service.create(dto);
     }
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public TaskStatusDTO update(@Valid @RequestBody final TaskStatusUpdateDTO dto, @PathVariable final long id) {
+    public LabelDTO update(@Valid @RequestBody final LabelUpdateDTO dto, @PathVariable final long id) {
         return service.update(dto, id);
     }
 

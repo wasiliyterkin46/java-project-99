@@ -8,7 +8,7 @@ import hexlet.code.spring.exception.ResourceNotFoundException;
 import hexlet.code.spring.mapper.JsonNullableMapper;
 import hexlet.code.spring.mapper.TaskMainMapper;
 import hexlet.code.spring.model.Task;
-import hexlet.code.spring.model.User;
+import hexlet.code.spring.repository.LabelRepository;
 import hexlet.code.spring.repository.TaskRepository;
 import hexlet.code.spring.repository.TaskStatusRepository;
 import hexlet.code.spring.repository.UserRepository;
@@ -16,6 +16,7 @@ import jakarta.validation.Valid;
 import org.openapitools.jackson.nullable.JsonNullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -34,6 +35,9 @@ public class TaskService {
 
     @Autowired
     private TaskStatusRepository taskStatusRepository;
+
+    @Autowired
+    private LabelRepository labelRepository;
 
     @Autowired
     private TaskMainMapper mapper;
@@ -63,27 +67,7 @@ public class TaskService {
     }
 
     public final TaskDTO create(@Valid final TaskCreateDTO dto) {
-        Long userId = dto.getAssigneeId();
-        if (userId != null && !userRepository.existsById(userId)) {
-            throw new ResourceNotFoundException(String.format("User-assignee with id = %s not found", userId));
-        }
-
-        var statusName = dto.getStatus();
-        if (!taskStatusRepository.existsByName(statusName)) {
-            throw new ResourceNotFoundException(String.format("Task status with name = %s not found", statusName));
-        }
-
         var task = mapper.mapToModel(dto);
-
-        User user = null;
-        if (userId != null) {
-            user = userRepository.findById(userId).get();
-        }
-
-        task.setAssignee(user);
-        var taskStatus = taskStatusRepository.findByName(statusName).get();
-        task.setTaskStatus(taskStatus);
-
         repository.save(task);
         return mapper.mapToDTO(task);
     }
@@ -91,19 +75,6 @@ public class TaskService {
     public final TaskDTO update(@Valid final TaskUpdateDTO dto, final Long id) {
         var task = repository.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException(String.format("Task with id = %s not found", id)));
-        if (jsonNullableMapper.isPresent(dto.getAssigneeId())) {
-            if (innerEntityNotFoundInBase(dto.getAssigneeId(), "user")) {
-                throw new ResourceNotFoundException(String.format("User-assignee with id = %s not found",
-                        jsonNullableMapper.unwrap(dto.getAssigneeId())));
-            }
-        }
-        if (jsonNullableMapper.isPresent(dto.getStatus())) {
-            if (innerEntityNotFoundInBase(dto.getStatus(), "taskStatus")) {
-                throw new ResourceNotFoundException(String.format("Task status with name = %s not found",
-                        jsonNullableMapper.unwrap(dto.getStatus())));
-            }
-        }
-
         mapper.updateModelFromDTO(dto, task);
         repository.save(task);
         return mapper.mapToDTO(task);
