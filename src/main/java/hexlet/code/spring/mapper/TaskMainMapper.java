@@ -2,6 +2,7 @@ package hexlet.code.spring.mapper;
 
 import hexlet.code.spring.dto.task.TaskCreateDTO;
 import hexlet.code.spring.dto.task.TaskDTO;
+import hexlet.code.spring.dto.task.TaskParamsDTO;
 import hexlet.code.spring.dto.task.TaskUpdateDTO;
 import hexlet.code.spring.exception.ResourceNotFoundException;
 import hexlet.code.spring.model.Label;
@@ -20,6 +21,7 @@ import org.mapstruct.ReportingPolicy;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 @Mapper(uses = { JsonNullableMapper.class, ReferenceMapper.class },
@@ -29,6 +31,8 @@ import java.util.Set;
         imports = {}
 )
 public abstract class TaskMainMapper {
+    private final long maxEntity = 10L;
+
     @Autowired
     private TaskStatusRepository taskStatusRepository;
 
@@ -121,6 +125,26 @@ public abstract class TaskMainMapper {
         }
     }
 
+    @AfterMapping
+    public final void afterMapToParamsDTO(final Map<String, String> map, @MappingTarget final TaskParamsDTO dto) {
+        dto.setStart(!map.containsKey("_start") ? 0L : Long.parseLong(map.get("_start")));
+        dto.setEnd(!map.containsKey("_end") ? maxEntity : Long.parseLong(map.get("_end")));
+        dto.setSortField(!map.containsKey("_sort") ? "id" : map.get("_sort"));
+        dto.setSortOrder(!map.containsKey("_order") ? "ASC" : map.get("_order"));
+        if (map.containsKey("titleCont")) {
+            dto.setTitleCont(map.get("titleCont"));
+        }
+        if (map.containsKey("status")) {
+            dto.setStatus(map.get("status"));
+        }
+        if (map.containsKey("assigneeId")) {
+            dto.setAssigneeId(Long.parseLong(map.get("assigneeId")));
+        }
+        if (map.containsKey("labelId")) {
+            dto.setLabelId(Long.parseLong(map.get("labelId")));
+        }
+    }
+
     @Mapping(source = "name", target = "title")
     @Mapping(source = "description", target = "content")
     @Mapping(source = "assignee.id", target = "assigneeId")
@@ -143,4 +167,13 @@ public abstract class TaskMainMapper {
     @Mapping(target = "labels", ignore = true)
     public abstract void updateModelFromDTO(TaskUpdateDTO dto, @MappingTarget Task model);
 
+    @Mapping(target = "titleCont", ignore = true)
+    @Mapping(target = "status", ignore = true)
+    @Mapping(target = "sortField", ignore = true)
+    @Mapping(target = "sortOrder", ignore = true)
+    @Mapping(target = "assigneeId", ignore = true)
+    @Mapping(target = "labelId", ignore = true)
+    @Mapping(target = "start", ignore = true)
+    @Mapping(target = "end", ignore = true)
+    public abstract TaskParamsDTO mapToParamDTO(Map<String, String> params);
 }

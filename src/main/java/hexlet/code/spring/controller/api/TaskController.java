@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/tasks")
@@ -29,12 +30,8 @@ public class TaskController {
     private TaskService service;
 
     @GetMapping
-    public ResponseEntity<List<TaskDTO>> index(
-            @RequestParam(name = "_start", defaultValue = "0") final long start,
-            @RequestParam(name = "_end", defaultValue = "10") final long end,
-            @RequestParam(name = "_order", defaultValue = "ASC") final String order,
-            @RequestParam(name = "_sort", defaultValue = "id") final String sort) {
-        var tasksDTO = service.getAll(start, end, order, sort);
+    public ResponseEntity<List<TaskDTO>> index(@RequestParam final Map<String, String> allParams) {
+        var tasksDTO = service.getAll(allParams);
         return ResponseEntity.ok()
                 .header("X-Total-Count", String.valueOf(service.count()))
                 .body(tasksDTO);

@@ -220,7 +220,7 @@ public class TaskControllerTest {
     }
 
     @Test
-    public void testIndexSuccess() throws Exception {
+    public void testIndexSuccessAll() throws Exception {
         var request = get(basePath).with(token);
         var responseBody = mockMvc.perform(request).andExpect(status().isOk()).andReturn()
                 .getResponse().getContentAsString();
@@ -232,7 +232,30 @@ public class TaskControllerTest {
     }
 
     @Test
-    public void testIndexFailture() throws Exception {
+    public void testIndexSuccessAllWithFiltersFind() throws Exception {
+        var request = get(basePath).with(token).param("titleCont", testTask.getName().substring(2))
+                .param("status", testTask.getTaskStatus().getSlug());
+        var responseBody = mockMvc.perform(request).andExpect(status().isOk()).andReturn()
+                .getResponse().getContentAsString();
+        List<TaskDTO> tasksDTOS = om.readValue(responseBody, new TypeReference<>() {
+        });
+        var actual = tasksDTOS.stream().map(TaskDTO::getId).toList();
+        var expected = repository.findAll().stream().map(Task::getId).toList();
+        Assertions.assertThat(actual).containsExactlyInAnyOrderElementsOf(expected);
+    }
+
+    @Test
+    public void testIndexSuccessAllWithFiltersNotFind() throws Exception {
+        var request = get(basePath).with(token).param("titleCont", testTask.getName() + "i")
+                .param("status", testTask.getTaskStatus().getSlug());
+        var responseBody = mockMvc.perform(request).andExpect(status().isOk()).andReturn()
+                .getResponse().getContentAsString();
+        List<TaskDTO> tasksDTOS = om.readValue(responseBody, new TypeReference<>() {
+        });
+        assertTrue(tasksDTOS.isEmpty());
+    }
+    @Test
+    public void testIndexFailtureAll() throws Exception {
         var request1 = get(basePath).with(token).queryParam("_sort", "i")
                 .queryParam("_order", "ASC").queryParam("_start", "0")
                 .queryParam("_end", "25");

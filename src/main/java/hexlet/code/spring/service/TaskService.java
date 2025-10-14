@@ -12,6 +12,7 @@ import hexlet.code.spring.repository.LabelRepository;
 import hexlet.code.spring.repository.TaskRepository;
 import hexlet.code.spring.repository.TaskStatusRepository;
 import hexlet.code.spring.repository.UserRepository;
+import hexlet.code.spring.specification.TaskSpecification;
 import jakarta.validation.Valid;
 import org.openapitools.jackson.nullable.JsonNullable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,17 +45,17 @@ public class TaskService {
     @Autowired
     private JsonNullableMapper jsonNullableMapper;
 
-    public final List<TaskDTO> getAll() {
-        return repository.findAll().stream()
-                .map(mapper::mapToDTO)
-                .toList();
-    }
+    @Autowired
+    private TaskSpecification specification;
 
-    public final List<TaskDTO> getAll(final long start, final long end, final String order, final String sort) {
-        return repository.findAll().stream()
-                .sorted(getCompare(order, sort))
-                .skip(start)
-                .limit(end - start + 1)
+    public final List<TaskDTO> getAll(final Map<String, String> params) {
+        var paramsDTO = mapper.mapToParamDTO(params);
+        var spec = specification.build(paramsDTO);
+
+        return repository.findAll(spec).stream()
+                .sorted(getCompare(paramsDTO.getSortOrder(), paramsDTO.getSortField()))
+                .skip(paramsDTO.getStart())
+                .limit(paramsDTO.getEnd() - paramsDTO.getStart() + 1)
                 .map(mapper::mapToDTO)
                 .toList();
     }
