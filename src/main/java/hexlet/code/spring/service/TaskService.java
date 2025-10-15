@@ -14,7 +14,6 @@ import hexlet.code.spring.repository.TaskStatusRepository;
 import hexlet.code.spring.repository.UserRepository;
 import hexlet.code.spring.specification.TaskSpecification;
 import jakarta.validation.Valid;
-import org.openapitools.jackson.nullable.JsonNullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -122,22 +121,5 @@ public class TaskService {
         var func = mapOrder.get(order);
 
         return func.apply(comparator);
-    }
-
-    private <T> boolean innerEntityNotFoundInBase(final JsonNullable<T> field, final String entityName) {
-        if (field.isPresent()) {
-            T param = jsonNullableMapper.unwrap(field);
-            switch (entityName) {
-                case "user":
-                    return !userRepository.existsById((long) param);
-                case "taskStatus":
-                    return !taskStatusRepository.existsByName(param.toString());
-                default:
-                    throw new RuntimeException(String.format("Внутренняя ошибка приложения. "
-                            + "В метод предоставлено некорректное имя сущности = %s", entityName));
-            }
-        }
-
-        return false;
     }
 }

@@ -273,7 +273,7 @@ public class TaskControllerTest {
         var responseBody = mockMvc.perform(request).andExpect(status().isOk()).andReturn()
                 .getResponse().getContentAsString();
         assertThatJson(responseBody).and(v -> v.node("title").isEqualTo(testTask.getName()),
-                v -> v.node("status").isEqualTo(testTask.getTaskStatus().getName()));
+                v -> v.node("status").isEqualTo(testTask.getTaskStatus().getSlug()));
     }
 
     @Test
@@ -313,7 +313,7 @@ public class TaskControllerTest {
         labelRepository.save(label);
 
         var dto = new TaskCreateDTO();
-        dto.setStatus(taskStatus.getName());
+        dto.setStatus(taskStatus.getSlug());
         dto.setAssigneeId(testUser.getId());
         dto.setTitle(task.getName());
         dto.setLabelIds(new HashSet<>(Collections.singletonList(label.getId())));

@@ -57,17 +57,17 @@ public abstract class TaskMainMapper {
 
         // status.name
         var statusId = model.getTaskStatus().getId();
-        var statusName = taskStatusRepository.findById(statusId).get().getName();
+        var statusName = taskStatusRepository.findById(statusId).get().getSlug();
         dto.setStatus(statusName);
     }
 
     @AfterMapping
     public final void afterCreate(final TaskCreateDTO dto, @MappingTarget final Task model) {
         // Status
-        var taskStatusName = dto.getStatus();
-        var taskStatus = taskStatusRepository.findByName(taskStatusName).orElseThrow(() ->
-                new ResourceNotFoundException(String.format("Task with name = %s not found",
-                        taskStatusName)));
+        var taskStatusSlug = dto.getStatus();
+        var taskStatus = taskStatusRepository.findBySlug(taskStatusSlug).orElseThrow(() ->
+                new ResourceNotFoundException(String.format("Task with slug = %s not found",
+                        taskStatusSlug)));
         model.setTaskStatus(taskStatus);
 
         // Assignee
@@ -92,10 +92,10 @@ public abstract class TaskMainMapper {
     @AfterMapping
     public final void afterUpdate(final TaskUpdateDTO dto, @MappingTarget final Task model) {
         if (jsonNullableMapper.isPresent(dto.getStatus())) {
-            var taskStatusName = jsonNullableMapper.unwrap(dto.getStatus());
-            var taskStatus = taskStatusRepository.findByName(taskStatusName).orElseThrow(() ->
-                    new ResourceNotFoundException(String.format("Task status with name"
-                            + " = %s not found", taskStatusName)));
+            var taskStatusSlug = jsonNullableMapper.unwrap(dto.getStatus());
+            var taskStatus = taskStatusRepository.findBySlug(taskStatusSlug).orElseThrow(() ->
+                    new ResourceNotFoundException(String.format("Task status with slug"
+                            + " = %s not found", taskStatusSlug)));
             model.setTaskStatus(taskStatus);
         }
 
