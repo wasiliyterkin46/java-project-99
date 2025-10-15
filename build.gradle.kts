@@ -19,7 +19,7 @@ version = "0.0.1-SNAPSHOT"
 description = "Demo project for Spring Boot"
 
 application {
-    mainClass.set("hexlet.code.spring.AppApplication")
+    mainClass.set("hexlet.code.AppApplication")
 }
 
 java {
