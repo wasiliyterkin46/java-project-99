@@ -18,5 +18,5 @@ public class TaskCreateDTO {
     private String content;
     @NotNull
     private String status;
-    private Set<Long> labelIds;
+    private Set<Long> taskLabelIds;
 }

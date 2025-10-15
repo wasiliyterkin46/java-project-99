@@ -53,7 +53,7 @@ public abstract class TaskMainMapper {
         // labels
         var labels = labelRepository.findAllByTasks(model);
         Set<Long> labelIds = new HashSet<>(labels.stream().map(Label::getId).toList());
-        dto.setLabelIds(labelIds);
+        dto.setTaskLabelIds(labelIds);
 
         // status.name
         var statusId = model.getTaskStatus().getId();
@@ -66,8 +66,7 @@ public abstract class TaskMainMapper {
         // Status
         var taskStatusSlug = dto.getStatus();
         var taskStatus = taskStatusRepository.findBySlug(taskStatusSlug).orElseThrow(() ->
-                new ResourceNotFoundException(String.format("Task with slug = %s not found",
-                        taskStatusSlug)));
+                new ResourceNotFoundException(String.format("Task with slug = %s not found", taskStatusSlug)));
         model.setTaskStatus(taskStatus);
 
         // Assignee
@@ -79,7 +78,7 @@ public abstract class TaskMainMapper {
         }
 
         // Labels
-        var ids = dto.getLabelIds();
+        var ids = dto.getTaskLabelIds();
         if (ids != null && !ids.isEmpty()) {
             var labels = labelRepository.findAllById(ids);
             if (labels.size() != ids.size()) {
@@ -111,8 +110,8 @@ public abstract class TaskMainMapper {
             }
         }
 
-        if (jsonNullableMapper.isPresent(dto.getLabelIds())) {
-            var ids = jsonNullableMapper.unwrap(dto.getLabelIds());
+        if (jsonNullableMapper.isPresent(dto.getTaskLabelIds())) {
+            var ids = jsonNullableMapper.unwrap(dto.getTaskLabelIds());
             if (ids != null && !ids.isEmpty()) {
                 var labels = labelRepository.findAllById(ids);
                 if (labels.size() != ids.size()) {
@@ -149,7 +148,7 @@ public abstract class TaskMainMapper {
     @Mapping(source = "description", target = "content")
     @Mapping(source = "assignee.id", target = "assigneeId")
     @Mapping(target = "createdAt", source = "createdAt", dateFormat = "yyyy-MM-dd")
-    @Mapping(target = "labelIds", ignore = true)
+    @Mapping(target = "taskLabelIds", ignore = true)
     @Mapping(target = "status", ignore = true)
     public abstract TaskDTO mapToDTO(Task model);
 

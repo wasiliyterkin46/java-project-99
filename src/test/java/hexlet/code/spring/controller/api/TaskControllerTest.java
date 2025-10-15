@@ -30,7 +30,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -130,7 +131,7 @@ public class TaskControllerTest {
         assertNotNull(dtoFromBase);
         assertEquals(dtoFromBase.getStatus(), dtoResponse.getStatus());
         assertEquals(dtoFromBase.getTitle(), dtoResponse.getTitle());
-        assertEquals(dtoFromBase.getLabelIds(), dtoResponse.getLabelIds());
+        assertEquals(dtoFromBase.getTaskLabelIds(), dtoResponse.getTaskLabelIds());
     }
 
     @Test
@@ -176,7 +177,7 @@ public class TaskControllerTest {
         var actual = service.findById(testTask.getId());
 
         assertEquals(dtoRequest.getTitle(), actual.getTitle());
-        assertEquals(dtoRequest.getLabelIds(), actual.getLabelIds());
+        assertEquals(dtoRequest.getTaskLabelIds(), actual.getTaskLabelIds());
         assertEquals(dtoRequest.getAssigneeId(), actual.getAssigneeId());
         assertEquals(dtoRequest.getStatus(), actual.getStatus());
     }
@@ -309,14 +310,17 @@ public class TaskControllerTest {
         var taskStatus = Instancio.of(modelGenerator.getTaskStatusModel()).create();
         taskStatusRepository.save(taskStatus);
 
-        var label = Instancio.of(modelGenerator.getLabelModel()).create();
-        labelRepository.save(label);
+        var label1 = Instancio.of(modelGenerator.getLabelModel()).create();
+        labelRepository.save(label1);
+        var label2 = Instancio.of(modelGenerator.getLabelModel()).create();
+        labelRepository.save(label2);
+
 
         var dto = new TaskCreateDTO();
         dto.setStatus(taskStatus.getSlug());
         dto.setAssigneeId(testUser.getId());
         dto.setTitle(task.getName());
-        dto.setLabelIds(new HashSet<>(Collections.singletonList(label.getId())));
+        dto.setTaskLabelIds(new HashSet<>(Arrays.asList(label1.getId(), label2.getId())));
 
         return dto;
     }
