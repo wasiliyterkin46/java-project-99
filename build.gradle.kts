@@ -40,7 +40,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-devtools")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("jakarta.persistence:jakarta.persistence-api:3.1.0")
-    implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.23.0")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13")
 
     //Библиотеки для авторизации
