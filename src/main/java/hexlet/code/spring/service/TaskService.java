@@ -92,6 +92,12 @@ public class TaskService {
         return repository.count();
     }
 
+    public final long count(final Map<String, String> params) {
+        var paramsDTO = mapper.mapToParamDTO(params);
+        var spec = specification.build(paramsDTO);
+        return repository.findAll(spec).size();
+    }
+
     private Comparator<Task> getCompare(final String order, final String sort) {
         Map<String, Comparator<Task>> mapComparator = new HashMap<>();
         mapComparator.put("index", Comparator.comparing(Task::getIndex, Comparator.nullsFirst(Integer::compareTo)));

@@ -33,7 +33,7 @@ public class TaskController {
     public ResponseEntity<List<TaskDTO>> index(@RequestParam final Map<String, String> allParams) {
         var tasksDTO = service.getAll(allParams);
         return ResponseEntity.ok()
-                .header("X-Total-Count", String.valueOf(service.count()))
+                .header("X-Total-Count", String.valueOf(service.count(allParams)))
                 .body(tasksDTO);
     }
 

@@ -11,6 +11,7 @@ plugins {
     id("io.freefair.lombok") version "8.14.2"
     id("com.github.ben-manes.versions") version "0.52.0"
     id("org.sonarqube") version "6.3.1.5724"
+    id("io.sentry.jvm.gradle") version "5.12.1"
 }
 
 group = "hexlet.code"
@@ -39,6 +40,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-devtools")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("jakarta.persistence:jakarta.persistence-api:3.1.0")
+    implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.23.0")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13")
 
     //Библиотеки для авторизации
@@ -97,10 +99,26 @@ tasks.test {
     }
 }
 
+tasks.sentryBundleSourcesJava {
+    enabled = System.getenv("SENTRY_AUTH_TOKEN") != null
+}
+
 sonar {
     properties {
         property("sonar.projectKey", "wasiliyterkin46_java-project-99")
         property("sonar.organization", "wasiliyterkin46")
         property("sonar.host.url", "https://sonarcloud.io")
     }
+
+sentry {
+    // Generates a JVM (Java, Kotlin, etc.) source bundle and uploads your source code to Sentry.
+    // This enables source context, allowing you to see your source
+    // code as part of your stack traces in Sentry.
+    includeSourceContext = true
+
+    org = "brotherscheefs"
+    projectName = "java-spring-boot"
+    authToken = System.getenv("SENTRY_AUTH_TOKEN")
+}
+
 }

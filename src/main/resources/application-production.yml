@@ -7,3 +7,16 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: false
+sentry:
+  dsn: https://d91c802fc7930b7a9825c4ff7491bf47@o4510192336699392.ingest.de.sentry.io/4510192340762704
+  # Add data like request headers and IP for users,
+  # see https://docs.sentry.io/platforms/java/guides/spring-boot/data-management/data-collected/ for more info
+  send-default-pii: true
+  # Enable sending logs to Sentry
+  logs:
+    enabled: true
+  # Set traces-sample-rate to 1.0 to capture 100% of transactions for tracing.
+  # We recommend adjusting this value in production.
+  traces-sample-rate: 1.0
+  exception-resolver-order: -2147483647
+  environment: production
