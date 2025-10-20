@@ -1,5 +1,6 @@
 package hexlet.code.spring.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import hexlet.code.spring.dto.task.TaskCreateDTO;
 import hexlet.code.spring.dto.task.TaskDTO;
 import hexlet.code.spring.dto.task.TaskUpdateDTO;
@@ -8,6 +9,7 @@ import hexlet.code.spring.exception.ResourceNotFoundException;
 import hexlet.code.spring.mapper.JsonNullableMapper;
 import hexlet.code.spring.mapper.TaskMainMapper;
 import hexlet.code.spring.model.Task;
+import hexlet.code.spring.model.User;
 import hexlet.code.spring.repository.LabelRepository;
 import hexlet.code.spring.repository.TaskRepository;
 import hexlet.code.spring.repository.TaskStatusRepository;
@@ -16,15 +18,20 @@ import hexlet.code.spring.specification.TaskSpecification;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
 @Service
 public class TaskService {
+
+    @Autowired
+    private ObjectMapper om;
 
     @Autowired
     private TaskRepository repository;
@@ -47,7 +54,8 @@ public class TaskService {
     @Autowired
     private TaskSpecification specification;
 
-    public final List<TaskDTO> getAll(final Map<String, String> params) {
+    @Transactional
+    public List<TaskDTO> getAll(final Map<String, String> params) {
         var paramsDTO = mapper.mapToParamDTO(params);
         var spec = specification.build(paramsDTO);
 
@@ -59,27 +67,92 @@ public class TaskService {
                 .toList();
     }
 
-    public final TaskDTO findById(final Long id) {
+    @Transactional
+    public TaskDTO findById(final Long id) {
         var task = repository.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException(String.format("Task with id = %s not found", id)));
         return mapper.mapToDTO(task);
     }
 
-    public final TaskDTO create(@Valid final TaskCreateDTO dto) {
+    @Transactional
+    public TaskDTO create(@Valid final TaskCreateDTO dto) {
         var task = mapper.mapToModel(dto);
+
+        // Status
+        var taskStatusSlug = dto.getStatus();
+        var taskStatus = taskStatusRepository.findBySlug(taskStatusSlug).orElseThrow(() ->
+                new ResourceNotFoundException(String.format("Task with slug = %s not found", taskStatusSlug)));
+        task.setTaskStatus(taskStatus);
+
+        // Assignee
+        Long userId = dto.getAssigneeId();
+        if (userId != null) {
+            User assignee = userRepository.findById(userId).orElseThrow(() ->
+                    new ResourceNotFoundException(String.format("User-assignee with id = %s not found", userId)));
+            task.setAssignee(assignee);
+        }
+
+        // Labels
+        var ids = dto.getTaskLabelIds();
+        if (ids != null && !ids.isEmpty()) {
+            var labels = labelRepository.findAllById(ids);
+            if (labels.size() != ids.size()) {
+                throw new ResourceNotFoundException("Some labels not found");
+            }
+            task.setLabels(new HashSet<>(labels));
+        }
+
         repository.save(task);
         return mapper.mapToDTO(task);
     }
 
-    public final TaskDTO update(@Valid final TaskUpdateDTO dto, final Long id) {
+    @Transactional
+    public TaskDTO update(@Valid final TaskUpdateDTO dto, final Long id) {
         var task = repository.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException(String.format("Task with id = %s not found", id)));
         mapper.updateModelFromDTO(dto, task);
+
+        //Status
+        if (jsonNullableMapper.isPresent(dto.getStatus())) {
+            var taskStatusSlug = jsonNullableMapper.unwrap(dto.getStatus());
+            var taskStatus = taskStatusRepository.findBySlug(taskStatusSlug).orElseThrow(() ->
+                    new ResourceNotFoundException(String.format("Task status with slug"
+                            + " = %s not found", taskStatusSlug)));
+            task.setTaskStatus(taskStatus);
+        }
+
+        //Assignee
+        if (jsonNullableMapper.isPresent(dto.getAssigneeId())) {
+            var userId = jsonNullableMapper.unwrap(dto.getAssigneeId());
+
+            if (userId != null) {
+                var user = userRepository.findById(userId).orElseThrow(() ->
+                        new ResourceNotFoundException(String.format("User-assignee with id = %s not found", userId)));
+                task.setAssignee(user);
+            } else {
+                task.setAssignee(null);
+            }
+        }
+
+        // Labels
+        if (jsonNullableMapper.isPresent(dto.getTaskLabelIds())) {
+            var ids = jsonNullableMapper.unwrap(dto.getTaskLabelIds());
+            if (ids != null && !ids.isEmpty()) {
+                var labels = labelRepository.findAllById(ids);
+                if (labels.size() != ids.size()) {
+                    throw new ResourceNotFoundException("Some labels in task not found");
+                }
+                task.setLabels(new HashSet<>(labels));
+            } else {
+                task.setLabels(new HashSet<>());
+            }
+        }
+
         repository.save(task);
         return mapper.mapToDTO(task);
     }
 
-    public final void delete(final Long id) {
+    public void delete(final Long id) {
         var taskExist = repository.existsById(id);
         if (!taskExist) {
             throw new ResourceNotFoundException(String.format("Task with id = %s not found", id));
@@ -87,11 +160,11 @@ public class TaskService {
         repository.deleteById(id);
     }
 
-    public final long count() {
+    public long count() {
         return repository.count();
     }
 
-    public final long count(final Map<String, String> params) {
+    public long count(final Map<String, String> params) {
         var paramsDTO = mapper.mapToParamDTO(params);
         var spec = specification.build(paramsDTO);
         return repository.findAll(spec).size();
