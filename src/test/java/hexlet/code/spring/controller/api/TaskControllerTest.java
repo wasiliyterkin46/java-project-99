@@ -15,6 +15,7 @@ import hexlet.code.spring.repository.UserRepository;
 import hexlet.code.spring.service.TaskService;
 import hexlet.code.spring.util.ModelGenerator;
 import hexlet.code.spring.util.TestUtils;
+import lombok.NonNull;
 import org.assertj.core.api.Assertions;
 import org.instancio.Instancio;
 import org.junit.jupiter.api.BeforeEach;
@@ -70,11 +71,12 @@ public class TaskControllerTest {
 
     @Autowired
     @SuppressWarnings("checkstyle:ParameterNumber")
-    public TaskControllerTest(final WebApplicationContext wacD, final TaskMainMapper mapperD,
-                              final TaskRepository repositoryD, final UserRepository userRepositoryD,
-                              final TaskStatusRepository taskStatusRepositoryD, final ModelGenerator modelGeneratorD,
-                              final ObjectMapper omD, final TaskService serviceD, final TestUtils testUtilsD,
-                              final LabelRepository labelRepositoryD) {
+    public TaskControllerTest(@NonNull final WebApplicationContext wacD, @NonNull  final TaskMainMapper mapperD,
+                              @NonNull final TaskRepository repositoryD, @NonNull final UserRepository userRepositoryD,
+                              @NonNull final TaskStatusRepository taskStatusRepositoryD,
+                              @NonNull final ModelGenerator modelGeneratorD,
+                              @NonNull final ObjectMapper omD, @NonNull final TaskService serviceD,
+                              @NonNull final TestUtils testUtilsD, @NonNull final LabelRepository labelRepositoryD) {
         this.wac = wacD;
         this.mapper = mapperD;
         this.repository = repositoryD;

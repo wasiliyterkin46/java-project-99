@@ -14,6 +14,7 @@ import hexlet.code.spring.repository.UserRepository;
 import hexlet.code.spring.service.LabelService;
 import hexlet.code.spring.util.ModelGenerator;
 import hexlet.code.spring.util.TestUtils;
+import lombok.NonNull;
 import org.assertj.core.api.Assertions;
 import org.instancio.Instancio;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,45 +48,46 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 public class LabelControllerTest {
-    @Autowired
-    private WebApplicationContext wac;
 
-    @Autowired
-    private LabelMainMapper mapper;
-
-    @Autowired
-    private LabelRepository repository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private TaskStatusRepository taskStatusRepository;
-
-    @Autowired
-    private TaskRepository taskRepository;
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ModelGenerator modelGenerator;
-
-    @Autowired
-    private ObjectMapper om;
-
-    @Autowired
-    private LabelService service;
-
-    @Autowired
-    private TestUtils testUtils;
+    private final WebApplicationContext wac;
+    private final LabelMainMapper mapper;
+    private final LabelRepository repository;
+    private final UserRepository userRepository;
+    private final TaskStatusRepository taskStatusRepository;
+    private final TaskRepository taskRepository;
+    private final ModelGenerator modelGenerator;
+    private final ObjectMapper om;
+    private final LabelService service;
+    private final TestUtils testUtils;
 
     private SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor token;
     private User testUser;
     private Task testTask;
     private Label testLabel;
+    private MockMvc mockMvc;
 
     private final String basePath = "/api/labels";
+
+    @Autowired
+    @SuppressWarnings("checkstyle:ParameterNumber")
+    public LabelControllerTest(@NonNull final WebApplicationContext wacD, @NonNull  final LabelMainMapper mapperD,
+                            @NonNull final TaskRepository taskRepositoryD,
+                            @NonNull final UserRepository userRepositoryD,
+                            @NonNull final TaskStatusRepository taskStatusRepositoryD,
+                            @NonNull final ModelGenerator modelGeneratorD,
+                            @NonNull final ObjectMapper omD, @NonNull final LabelService serviceD,
+                            @NonNull final TestUtils testUtilsD, @NonNull final LabelRepository labelRepositoryD) {
+        this.wac = wacD;
+        this.mapper = mapperD;
+        this.taskRepository = taskRepositoryD;
+        this.userRepository = userRepositoryD;
+        this.taskStatusRepository = taskStatusRepositoryD;
+        this.modelGenerator = modelGeneratorD;
+        this.om = omD;
+        this.service = serviceD;
+        this.testUtils = testUtilsD;
+        this.repository = labelRepositoryD;
+    }
 
     @BeforeEach
     public void setUp() {

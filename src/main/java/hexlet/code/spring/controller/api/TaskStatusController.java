@@ -5,6 +5,8 @@ import hexlet.code.spring.dto.taskstatus.TaskStatusDTO;
 import hexlet.code.spring.dto.taskstatus.TaskStatusUpdateDTO;
 import hexlet.code.spring.service.TaskStatusService;
 import jakarta.validation.Valid;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,16 +19,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import lombok.AllArgsConstructor;
 
 import java.util.List;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/task_statuses")
 public final class TaskStatusController {
 
-    private final TaskStatusService service;
+    @NonNull private final TaskStatusService service;
 
     @GetMapping
     public ResponseEntity<List<TaskStatusDTO>> index(

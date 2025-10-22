@@ -13,6 +13,7 @@ import hexlet.code.spring.repository.TaskStatusRepository;
 import hexlet.code.spring.repository.UserRepository;
 import hexlet.code.spring.util.ModelGenerator;
 import hexlet.code.spring.util.TestUtils;
+import lombok.NonNull;
 import org.assertj.core.api.Assertions;
 import org.instancio.Instancio;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,38 +48,40 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 public final class UserControllerTest {
 
-    @Autowired
-    private WebApplicationContext wac;
-
-    @Autowired
-    private UserMainMapper mapper;
-
-    @Autowired
-    private UserRepository repository;
-
-    @Autowired
-    private TaskStatusRepository taskStatusRepository;
-
-    @Autowired
-    private TaskRepository taskRepository;
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ModelGenerator modelGenerator;
-
-    @Autowired
-    private ObjectMapper om;
-
-    @Autowired
-    private TestUtils testUtils;
+    private final WebApplicationContext wac;
+    private final UserMainMapper mapper;
+    private final UserRepository repository;
+    private final TaskStatusRepository taskStatusRepository;
+    private final TaskRepository taskRepository;
+    private final ModelGenerator modelGenerator;
+    private final ObjectMapper om;
+    private final TestUtils testUtils;
 
     private JwtRequestPostProcessor token;
 
     private User testUser;
+    private MockMvc mockMvc;
 
     private String basePath = "/api/users";
+
+    @Autowired
+    @SuppressWarnings("checkstyle:ParameterNumber")
+    public UserControllerTest(@NonNull final WebApplicationContext wacD,
+                                    @NonNull  final UserMainMapper mapperD,
+                                    @NonNull final TaskRepository taskRepositoryD,
+                                    @NonNull final UserRepository userRepositoryD,
+                                    @NonNull final TaskStatusRepository taskStatusRepositoryD,
+                                    @NonNull final ModelGenerator modelGeneratorD, @NonNull final ObjectMapper omD,
+                                    @NonNull final TestUtils testUtilsD) {
+        this.wac = wacD;
+        this.mapper = mapperD;
+        this.taskRepository = taskRepositoryD;
+        this.taskStatusRepository = taskStatusRepositoryD;
+        this.repository = userRepositoryD;
+        this.modelGenerator = modelGeneratorD;
+        this.om = omD;
+        this.testUtils = testUtilsD;
+    }
 
     @BeforeEach
     public void setUp() {

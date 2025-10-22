@@ -1,6 +1,7 @@
 package hexlet.code.spring.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -11,12 +12,11 @@ import hexlet.code.spring.model.User;
 import hexlet.code.spring.repository.UserRepository;
 
 @Service
+@RequiredArgsConstructor
 public final class CustomUserDetailsService implements UserDetailsManager {
-    @Autowired
-    private UserRepository userRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    @NonNull private final UserRepository userRepository;
+    @NonNull private final PasswordEncoder passwordEncoder;
 
     @Override
     public void createUser(final UserDetails userData) {

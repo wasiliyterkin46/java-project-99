@@ -1,5 +1,6 @@
 package hexlet.code.spring.controller;
 
+import lombok.NonNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -15,8 +16,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @ActiveProfiles("test")
 public final class WelcomeControllerTest {
 
+    private final MockMvc mockMvc;
+
     @Autowired
-    private MockMvc mockMvc;
+    public WelcomeControllerTest(@NonNull final MockMvc mockMvcD) {
+        this.mockMvc = mockMvcD;
+    }
 
     @Test
     public void testWelcome() throws Exception {

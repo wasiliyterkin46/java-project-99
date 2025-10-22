@@ -12,9 +12,10 @@ import hexlet.code.spring.model.User;
 import hexlet.code.spring.repository.TaskRepository;
 import hexlet.code.spring.repository.UserRepository;
 import jakarta.validation.Valid;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import lombok.AllArgsConstructor;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -23,14 +24,14 @@ import java.util.Map;
 import java.util.function.Function;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserService {
 
-    private final UserRepository repository;
-    private final TaskRepository taskRepository;
-    private final UserMainMapper mapper;
-    private final JsonNullableMapper jsonNullableMapper;
-    private final PasswordEncoder encoder;
+    @NonNull private final UserRepository repository;
+    @NonNull private final TaskRepository taskRepository;
+    @NonNull private final UserMainMapper mapper;
+    @NonNull private final JsonNullableMapper jsonNullableMapper;
+    @NonNull private final PasswordEncoder encoder;
 
     private final String rightOrder = "ASC";
     private final String inverseOrder = "DESC";

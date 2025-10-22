@@ -11,8 +11,9 @@ import hexlet.code.spring.model.Label;
 import hexlet.code.spring.repository.LabelRepository;
 import hexlet.code.spring.repository.TaskRepository;
 import jakarta.validation.Valid;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import lombok.AllArgsConstructor;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -21,12 +22,12 @@ import java.util.Map;
 import java.util.function.Function;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class LabelService {
 
-    private final LabelRepository repository;
-    private final LabelMainMapper mapper;
-    private final TaskRepository taskRepository;
+    @NonNull private final LabelRepository repository;
+    @NonNull private final LabelMainMapper mapper;
+    @NonNull private final TaskRepository taskRepository;
 
     private final String rightOrder = "ASC";
     private final String inverseOrder = "DESC";

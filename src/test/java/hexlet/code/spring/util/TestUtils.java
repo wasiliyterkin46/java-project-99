@@ -4,6 +4,7 @@ import hexlet.code.spring.repository.LabelRepository;
 import hexlet.code.spring.repository.TaskRepository;
 import hexlet.code.spring.repository.TaskStatusRepository;
 import hexlet.code.spring.repository.UserRepository;
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
@@ -14,17 +15,21 @@ import java.util.function.Function;
 @Component
 public final class TestUtils {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final TaskStatusRepository taskStatusRepository;
+    private final TaskRepository taskRepository;
+    private final LabelRepository labelRepository;
 
     @Autowired
-    private TaskStatusRepository taskStatusRepository;
-
-    @Autowired
-    private TaskRepository taskRepository;
-
-    @Autowired
-    private LabelRepository labelRepository;
+    public TestUtils(@NonNull final UserRepository userRepositoryD,
+                    @NonNull final TaskStatusRepository taskStatusRepositoryD,
+                    @NonNull final TaskRepository taskRepositoryD,
+                    @NonNull final LabelRepository labelRepositoryD) {
+        this.userRepository = userRepositoryD;
+        this.taskStatusRepository = taskStatusRepositoryD;
+        this.taskRepository = taskRepositoryD;
+        this.labelRepository = labelRepositoryD;
+    }
 
     public <T> Long getNonExistentId(final JpaRepository<T, Long> repository,
                                             final Function<T, Long> function) {

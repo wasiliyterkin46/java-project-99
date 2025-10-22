@@ -7,6 +7,7 @@ import hexlet.code.spring.model.TaskStatus;
 import hexlet.code.spring.model.User;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
+import lombok.NonNull;
 import net.datafaker.Faker;
 import org.instancio.Instancio;
 import org.instancio.Model;
@@ -26,11 +27,15 @@ public class ModelGenerator {
     private Model<User> userModel;
     private Model<Label> labelModel;
 
-    @Autowired
-    private Faker faker;
+    private final Faker faker;
 
     private final int minLenText = 5;
     private final int maxLenText = 15;
+
+    @Autowired
+    public ModelGenerator(@NonNull final Faker fakerD) {
+        this.faker = fakerD;
+    }
 
     @PostConstruct
     private void init() {

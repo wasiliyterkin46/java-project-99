@@ -16,9 +16,10 @@ import hexlet.code.spring.repository.TaskStatusRepository;
 import hexlet.code.spring.repository.UserRepository;
 import hexlet.code.spring.specification.TaskSpecification;
 import jakarta.validation.Valid;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import lombok.AllArgsConstructor;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -27,18 +28,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Service
 public class TaskService {
 
-    private final ObjectMapper om;
-    private final TaskRepository repository;
-    private final UserRepository userRepository;
-    private final TaskStatusRepository taskStatusRepository;
-    private final LabelRepository labelRepository;
-    private final TaskMainMapper mapper;
-    private final JsonNullableMapper jsonNullableMapper;
-    private final TaskSpecification specification;
+    @NonNull private final ObjectMapper om;
+    @NonNull private final TaskRepository repository;
+    @NonNull private final UserRepository userRepository;
+    @NonNull private final TaskStatusRepository taskStatusRepository;
+    @NonNull private final LabelRepository labelRepository;
+    @NonNull private final TaskMainMapper mapper;
+    @NonNull private final JsonNullableMapper jsonNullableMapper;
+    @NonNull private final TaskSpecification specification;
 
     private final String rightOrder = "ASC";
     private final String inverseOrder = "DESC";

@@ -1,17 +1,18 @@
 package hexlet.code.spring.util;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import hexlet.code.spring.model.User;
 import hexlet.code.spring.repository.UserRepository;
-import lombok.AllArgsConstructor;
 
 @Component
-@AllArgsConstructor
+@RequiredArgsConstructor
 public final class UserUtils {
 
-    private final UserRepository userRepository;
+    @NonNull private final UserRepository userRepository;
 
     public User getCurrentUser() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
