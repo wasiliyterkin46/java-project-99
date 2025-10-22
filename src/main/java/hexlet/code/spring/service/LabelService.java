@@ -11,8 +11,8 @@ import hexlet.code.spring.model.Label;
 import hexlet.code.spring.repository.LabelRepository;
 import hexlet.code.spring.repository.TaskRepository;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import lombok.AllArgsConstructor;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -21,16 +21,15 @@ import java.util.Map;
 import java.util.function.Function;
 
 @Service
+@AllArgsConstructor
 public class LabelService {
 
-    @Autowired
-    private LabelRepository repository;
+    private final LabelRepository repository;
+    private final LabelMainMapper mapper;
+    private final TaskRepository taskRepository;
 
-    @Autowired
-    private LabelMainMapper mapper;
-
-    @Autowired
-    private TaskRepository taskRepository;
+    private final String rightOrder = "ASC";
+    private final String inverseOrder = "DESC";
 
     public final List<LabelDTO> getAll(final long start, final long end, final String order, final String sort) {
         return repository.findAll().stream()
@@ -48,6 +47,12 @@ public class LabelService {
     }
 
     public final LabelDTO create(@Valid final LabelCreateDTO dto) {
+        var nameLabel = dto.getName();
+        if (repository.existsByName(nameLabel)) {
+            throw new RequestDataCannotBeProcessed(String.format("Название метки должно быть уникальным. "
+                    + "В базе уже есть метка с name = %s", nameLabel));
+        }
+
         var label = mapper.mapToModel(dto);
         repository.save(label);
         return mapper.mapToDTO(label);
@@ -56,6 +61,12 @@ public class LabelService {
     public final LabelDTO update(@Valid final LabelUpdateDTO dto, final Long id) {
         var label = repository.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException(String.format("Label with id = %s not found", id)));
+
+        var nameLabel = dto.getName();
+        if (repository.existsByName(nameLabel)) {
+            throw new RequestDataCannotBeProcessed(String.format("Название метки должно быть уникальным. "
+                    + "В базе уже есть метка с name = %s", nameLabel));
+        }
 
         mapper.updateModelFromDTO(dto, label);
         repository.save(label);
@@ -87,8 +98,8 @@ public class LabelService {
         mapComparator.put("createdAt", Comparator.comparing(Label::getCreatedAt));
 
         Map<String, Function<Comparator<Label>, Comparator<Label>>> mapOrder = new HashMap<>();
-        mapOrder.put("DESC", Comparator::reversed);
-        mapOrder.put("ASC", comp -> comp);
+        mapOrder.put(inverseOrder, Comparator::reversed);
+        mapOrder.put(rightOrder, comp -> comp);
 
         if (!mapComparator.containsKey(sort)) {
             throw new RequestDataCannotBeProcessed(String.format("Указано некорректное поле сортировки = %s", sort));

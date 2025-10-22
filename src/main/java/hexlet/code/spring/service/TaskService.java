@@ -16,9 +16,9 @@ import hexlet.code.spring.repository.TaskStatusRepository;
 import hexlet.code.spring.repository.UserRepository;
 import hexlet.code.spring.specification.TaskSpecification;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import lombok.AllArgsConstructor;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -27,32 +27,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+@AllArgsConstructor
 @Service
 public class TaskService {
 
-    @Autowired
-    private ObjectMapper om;
+    private final ObjectMapper om;
+    private final TaskRepository repository;
+    private final UserRepository userRepository;
+    private final TaskStatusRepository taskStatusRepository;
+    private final LabelRepository labelRepository;
+    private final TaskMainMapper mapper;
+    private final JsonNullableMapper jsonNullableMapper;
+    private final TaskSpecification specification;
 
-    @Autowired
-    private TaskRepository repository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private TaskStatusRepository taskStatusRepository;
-
-    @Autowired
-    private LabelRepository labelRepository;
-
-    @Autowired
-    private TaskMainMapper mapper;
-
-    @Autowired
-    private JsonNullableMapper jsonNullableMapper;
-
-    @Autowired
-    private TaskSpecification specification;
+    private final String rightOrder = "ASC";
+    private final String inverseOrder = "DESC";
 
     @Transactional
     public List<TaskDTO> getAll(final Map<String, String> params) {
@@ -180,8 +169,8 @@ public class TaskService {
         mapComparator.put("createdAt", Comparator.comparing(Task::getCreatedAt));
 
         Map<String, Function<Comparator<Task>, Comparator<Task>>> mapOrder = new HashMap<>();
-        mapOrder.put("DESC", Comparator::reversed);
-        mapOrder.put("ASC", comp -> comp);
+        mapOrder.put(inverseOrder, Comparator::reversed);
+        mapOrder.put(rightOrder, comp -> comp);
 
         if (!mapComparator.containsKey(sort)) {
             throw new RequestDataCannotBeProcessed(String.format("Указано некорректное поле сортировки = %s", sort));

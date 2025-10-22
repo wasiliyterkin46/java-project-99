@@ -50,48 +50,42 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 public class TaskControllerTest {
-    @Autowired
-    private WebApplicationContext wac;
+    private final WebApplicationContext wac;
+    private final TaskMainMapper mapper;
+    private final TaskRepository repository;
+    private final UserRepository userRepository;
+    private final TaskStatusRepository taskStatusRepository;
+    private final ModelGenerator modelGenerator;
+    private final ObjectMapper om;
+    private final TaskService service;
+    private final TestUtils testUtils;
+    private final LabelRepository labelRepository;
 
-    @Autowired
-    private TaskMainMapper mapper;
-
-    @Autowired
-    private TaskRepository repository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private TaskStatusRepository taskStatusRepository;
-
-    @Autowired
     private MockMvc mockMvc;
-
-    @Autowired
-    private ModelGenerator modelGenerator;
-
-    @Autowired
-    private ObjectMapper om;
-
-    @Autowired
-    private TaskService service;
-
-    @Autowired
-    private TestUtils testUtils;
-
-    @Autowired
-    private LabelRepository labelRepository;
-
     private SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor token;
-
     private User testUser;
-
     private Task testTask;
-
     private Label testLabel;
-
     private final String basePath = "/api/tasks";
+
+    @Autowired
+    @SuppressWarnings("checkstyle:ParameterNumber")
+    public TaskControllerTest(final WebApplicationContext wacD, final TaskMainMapper mapperD,
+                              final TaskRepository repositoryD, final UserRepository userRepositoryD,
+                              final TaskStatusRepository taskStatusRepositoryD, final ModelGenerator modelGeneratorD,
+                              final ObjectMapper omD, final TaskService serviceD, final TestUtils testUtilsD,
+                              final LabelRepository labelRepositoryD) {
+        this.wac = wacD;
+        this.mapper = mapperD;
+        this.repository = repositoryD;
+        this.userRepository = userRepositoryD;
+        this.taskStatusRepository = taskStatusRepositoryD;
+        this.modelGenerator = modelGeneratorD;
+        this.om = omD;
+        this.service = serviceD;
+        this.testUtils = testUtilsD;
+        this.labelRepository = labelRepositoryD;
+    }
 
     @BeforeEach
     public void setUp() {

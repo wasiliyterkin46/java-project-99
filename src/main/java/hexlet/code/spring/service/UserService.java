@@ -12,8 +12,9 @@ import hexlet.code.spring.model.User;
 import hexlet.code.spring.repository.TaskRepository;
 import hexlet.code.spring.repository.UserRepository;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import lombok.AllArgsConstructor;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -22,18 +23,17 @@ import java.util.Map;
 import java.util.function.Function;
 
 @Service
+@AllArgsConstructor
 public class UserService {
-    @Autowired
-    private UserRepository repository;
 
-    @Autowired
-    private TaskRepository taskRepository;
+    private final UserRepository repository;
+    private final TaskRepository taskRepository;
+    private final UserMainMapper mapper;
+    private final JsonNullableMapper jsonNullableMapper;
+    private final PasswordEncoder encoder;
 
-    @Autowired
-    private UserMainMapper mapper;
-
-    @Autowired
-    private JsonNullableMapper jsonNullableMapper;
+    private final String rightOrder = "ASC";
+    private final String inverseOrder = "DESC";
 
     public final List<UserDTO> getAll(final long start, final long end, final String order, final String sort) {
         return repository.findAll().stream()
@@ -51,6 +51,15 @@ public class UserService {
     }
 
     public final UserDTO create(final UserCreateDTO dto) {
+        var email = dto.getEmail();
+        if (repository.existsByEmail(email)) {
+            throw new RequestDataCannotBeProcessed(String.format("Email должен быть уникальным. "
+                    + "В базе уже есть пользователь с email = %s", email));
+        }
+
+        var password = dto.getPassword();
+        dto.setPassword(encoder.encode(password));
+
         var user = mapper.mapToModel(dto);
         repository.save(user);
         return mapper.mapToDTO(user);
@@ -60,7 +69,20 @@ public class UserService {
         var user = repository.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException(String.format("User with id = %s not found", id)));
 
+        if (jsonNullableMapper.isPresent(dto.getEmail())) {
+            var email = jsonNullableMapper.unwrap(dto.getEmail());
+            if (repository.existsByEmail(email)) {
+                throw new RequestDataCannotBeProcessed(String.format("Email должен быть уникальным. "
+                        + "В базе уже есть пользователь с email = %s", email));
+            }
+        }
+
         mapper.updateModelFromDTO(dto, user);
+
+        if (jsonNullableMapper.isPresent(dto.getPassword())) {
+            user.setPasswordDigest(encoder.encode(jsonNullableMapper.unwrap(dto.getPassword())));
+        }
+
         repository.save(user);
         return mapper.mapToDTO(user);
     }
@@ -95,8 +117,8 @@ public class UserService {
         mapComparator.put("createdAt", Comparator.comparing(User::getCreatedAt));
 
         Map<String, Function<Comparator<User>, Comparator<User>>> mapOrder = new HashMap<>();
-        mapOrder.put("DESC", Comparator::reversed);
-        mapOrder.put("ASC", comp -> comp);
+        mapOrder.put(inverseOrder, Comparator::reversed);
+        mapOrder.put(rightOrder, comp -> comp);
 
         if (!mapComparator.containsKey(sort)) {
             throw new RequestDataCannotBeProcessed(String.format("Указано некорректное поле сортировки = %s", sort));

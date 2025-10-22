@@ -1,6 +1,5 @@
 package hexlet.code.spring.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -33,7 +32,7 @@ import java.util.Set;
 @Setter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @EntityListeners(AuditingEntityListener.class)
-public class Task implements BaseEntity {
+public class Task {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
@@ -42,12 +41,10 @@ public class Task implements BaseEntity {
     private String name;
     private Integer index;
     private String description;
-    @JsonIgnore
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "status_id")
     private TaskStatus taskStatus;
-    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User assignee;
@@ -55,9 +52,7 @@ public class Task implements BaseEntity {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @JsonIgnore
     @ManyToMany(
-//            cascade = {CascadeType.MERGE, CascadeType.PERSIST},
             cascade = {CascadeType.MERGE},
             fetch = FetchType.LAZY
     )

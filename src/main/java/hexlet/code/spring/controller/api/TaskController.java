@@ -5,7 +5,6 @@ import hexlet.code.spring.dto.task.TaskDTO;
 import hexlet.code.spring.dto.task.TaskUpdateDTO;
 import hexlet.code.spring.service.TaskService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,16 +17,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import lombok.AllArgsConstructor;
 
 import java.util.List;
 import java.util.Map;
 
+@AllArgsConstructor
 @RestController
 @RequestMapping("/api/tasks")
 public class TaskController {
 
-    @Autowired
-    private TaskService service;
+    private final TaskService service;
 
     @GetMapping
     public ResponseEntity<List<TaskDTO>> index(@RequestParam final Map<String, String> allParams) {

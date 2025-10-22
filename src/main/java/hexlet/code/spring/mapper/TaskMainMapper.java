@@ -7,10 +7,6 @@ import hexlet.code.spring.dto.task.TaskUpdateDTO;
 import hexlet.code.spring.model.Label;
 import hexlet.code.spring.model.Task;
 import hexlet.code.spring.model.TaskStatus;
-import hexlet.code.spring.repository.LabelRepository;
-import hexlet.code.spring.repository.TaskRepository;
-import hexlet.code.spring.repository.TaskStatusRepository;
-import hexlet.code.spring.repository.UserRepository;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -19,14 +15,13 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-@Mapper(uses = { JsonNullableMapper.class, ReferenceMapper.class },
+@Mapper(uses = { JsonNullableMapper.class },
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
         componentModel = MappingConstants.ComponentModel.SPRING,
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
@@ -34,21 +29,6 @@ import java.util.Set;
 )
 public abstract class TaskMainMapper {
     private final long maxEntity = 10L;
-
-    @Autowired
-    private TaskStatusRepository taskStatusRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private LabelRepository labelRepository;
-
-    @Autowired
-    private TaskRepository repository;
-
-    @Autowired
-    private JsonNullableMapper jsonNullableMapper;
 
     @AfterMapping
     public final void afterMapToParamsDTO(final Map<String, String> map, @MappingTarget final TaskParamsDTO dto) {
